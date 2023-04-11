@@ -35,11 +35,12 @@ libfs_request_t libfs_request_deserialize(const u8* data);
 // Individually defined request types
 //
 // Each request type has a pack and unpack function. The pack function takes a concrete request
-// type and returns a generic, serialized request. A deep copy of the data (eg. name) is made.
+// type and returns a generic, packed request. A deep copy of the data (eg. name) is made.
 //
 // The unpack function takes a generic request and deserializes it as a concrete request type.
 // The data is not copied, so the returned request is only valid as long as the original request
 // is valid. It can be thought of as a view into the original request when deserialized.
+#define __DO_NOT_SHOW_THIS_COMMENT_AS_libfs_request_create_DOCUMENTATION__
 
 typedef struct libfs_request_create {
     char* name;
