@@ -273,7 +273,7 @@ flowchart TB
 **Narzędzia**:
 - **Kompilator**: GCC, kompilowanie z `-Wall -Werror -Wextra -Wconversion -Wpedantic` 
 - **Formatowanie**: `clang-format`
-- **Build System**: TODO
+- **Build System**: GNU `make`. Każdy pod-projekt (`libfs`, `libfs-core`, `libfs-daemon` itd.) ma własny `Makefile`, plus główny, agregujący je.
 - **Edytor**: VS Code, neovim
 
 Biblioteka będzie budowana jako archiwum `.a`.
