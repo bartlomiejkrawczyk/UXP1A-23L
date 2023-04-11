@@ -1,5 +1,4 @@
-#ifndef LIBFS_CORE_REQUEST_H
-#define LIBFS_CORE_REQUEST_H
+#pragma once
 
 #include "types.h"
 
@@ -112,5 +111,3 @@ typedef struct libfs_request_close {
 
 libfs_request_t libfs_request_close_pack(const libfs_request_close_t* request_close);
 libfs_request_close_t libfs_request_close_unpack(const libfs_request_t* request);
-
-#endif  // LIBFS_CORE_REQUEST_H

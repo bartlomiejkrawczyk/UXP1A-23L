@@ -1,5 +1,4 @@
-#ifndef LIBFS_CORE_RESPONSE_H
-#define LIBFS_CORE_RESPONSE_H
+#pragma once
 
 #include "types.h"
 
@@ -14,5 +13,3 @@ void libfs_response_free(libfs_response_t response);
 
 const u8* libfs_response_serialize(const libfs_response_t* response, usize* size);
 libfs_response_t libfs_response_deserialize(const u8* data);
-
-#endif  // LIBFS_CORE_RESPONSE_H

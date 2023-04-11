@@ -1,5 +1,5 @@
-#ifndef LIBFS_CORE_TYPES_H
-#define LIBFS_CORE_TYPES_H
+#pragma once
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -18,6 +18,3 @@ typedef size_t usize;   // "natural" size of a pointer
 typedef __ssize_t isize;
 
 typedef int fd_type;
-
-#endif // LIBFS_CORE_TYPES_H
-
