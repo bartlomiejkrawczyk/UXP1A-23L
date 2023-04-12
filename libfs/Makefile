@@ -13,8 +13,8 @@ INCLUDE_FILES+=$(wildcard ../libfs-core/include/*.h) $(wildcard ../libfs-core/in
 
 INCLUDE_PATHS=-Iinclude -I. -I../libfs-core/include
 
-CFLAGS=-g -std=c11
-CXXFLAGS=-g -std=c++17
+CFLAGS=-g -std=c11 -fdiagnostics-color=always
+CXXFLAGS=-g -std=c++17 -fdiagnostics-color=always
 
 LDFLAGS=-L../libfs-core -l:libfs-core.a
 

@@ -12,8 +12,8 @@ INCLUDE_FILES=$(wildcard include/*.h) $(wildcard include/*.hpp)
 
 INCLUDE_PATHS=-Iinclude -I.
 
-CFLAGS=-g -std=c11
-CXXFLAGS=-g -std=c++17
+CFLAGS=-g -std=c11 -fdiagnostics-color=always
+CXXFLAGS=-g -std=c++17 -fdiagnostics-color=always
 
 WARN_FLAGS=-Wall -Wextra -Wpedantic -Werror -Wconversion -Wno-unused-function
 
