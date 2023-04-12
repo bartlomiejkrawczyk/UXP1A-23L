@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "request.h"
@@ -21,6 +22,9 @@ int main(int argc, char* argv[]) {
 
     usize buffer_size;
     u8* buffer = libfs_request_serialize(&packed_request, &buffer_size);
+    // serialize of the request copies relevant data into the buffer.
+    // We can free the request now.
+    libfs_request_free(packed_request);
 
     printf("buffer_size: %ld\n", buffer_size);
     printf("buffer: [\n");
@@ -33,6 +37,9 @@ int main(int argc, char* argv[]) {
     printf("\n]\n");
 
     libfs_request_t unpacked_request = libfs_request_deserialize(buffer);
+    // deserialize of the request copies relevant data into the buffer.
+    // We can free the buffer now.
+    free(buffer);
 
     libfs_request_create_t unpacked_request_create =
         libfs_request_create_unpack(&unpacked_request);
@@ -42,6 +49,10 @@ int main(int argc, char* argv[]) {
     printf("sender: %d\n", unpacked_request.sender);
 
     printf("mode: %o, name: %s\n", unpacked_request_create.mode, unpacked_request_create.name);
+
+    // We need to keep the unpacked request around until we're done with it, including
+    // the views like libfs_request_create_t.
+    libfs_request_free(unpacked_request);
 
     return 0;
 }
