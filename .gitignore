@@ -1,1 +1,6 @@
 output/
+obj/
+bin/
+.cache/
+compile_commands.json
+*.a
