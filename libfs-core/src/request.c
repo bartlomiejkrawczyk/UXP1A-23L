@@ -2,12 +2,15 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "types.h"
 
 libfs_request_t libfs_request_new(libfs_request_kind_t kind, usize data_size, u8* data) {
     libfs_request_t request = {
         .kind = kind,
+        .sender = getpid(),
         .data_size = data_size,
     };
 
@@ -26,14 +29,16 @@ void libfs_request_free(libfs_request_t request) {
 }
 
 u8* libfs_request_serialize(const libfs_request_t* request, usize* size) {
-    *size = sizeof(libfs_request_kind_t) + sizeof(usize) + request->data_size;
+    *size = sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize) + request->data_size;
     u8* data = malloc(*size);
 
     memcpy(data, &request->kind, sizeof(libfs_request_kind_t));
-    memcpy(data + sizeof(libfs_request_kind_t), &request->data_size, sizeof(usize));
+    memcpy(data + sizeof(libfs_request_kind_t), &request->sender, sizeof(pid_t));
+    memcpy(data + sizeof(libfs_request_kind_t) + sizeof(pid_t), &request->data_size,
+           sizeof(usize));
     if (request->data_size > 0) {
-        memcpy(data + sizeof(libfs_request_kind_t) + sizeof(usize), request->data,
-               request->data_size);
+        memcpy(data + sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize),
+               request->data, request->data_size);
     }
 
     return data;
@@ -42,10 +47,14 @@ u8* libfs_request_serialize(const libfs_request_t* request, usize* size) {
 libfs_request_t libfs_request_deserialize(const u8* data) {
     libfs_request_t request;
     memcpy(&request.kind, data, sizeof(libfs_request_kind_t));
-    memcpy(&request.data_size, data + sizeof(libfs_request_kind_t), sizeof(usize));
+    memcpy(&request.sender, data + sizeof(libfs_request_kind_t), sizeof(pid_t));
+    memcpy(&request.data_size, data + sizeof(libfs_request_kind_t) + sizeof(pid_t),
+           sizeof(usize));
     if (request.data_size > 0) {
         request.data = malloc(request.data_size);
-        memcpy(request.data, data + sizeof(libfs_request_kind_t) + sizeof(usize), request.data_size);
+        memcpy(request.data,
+               data + sizeof(libfs_request_kind_t) + +sizeof(pid_t) + sizeof(usize),
+               request.data_size);
     }
     return request;
 }
@@ -55,6 +64,7 @@ libfs_request_t libfs_request_create_pack(const libfs_request_create_t* request_
 
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_CREATE;
+    request.sender = getpid();
     request.data_size = sizeof(u32) + name_len;
     request.data = malloc(request.data_size);
 
@@ -77,6 +87,7 @@ libfs_request_t libfs_request_chmode_pack(const libfs_request_chmode_t* request_
 
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_CHMODE;
+    request.sender = getpid();
     request.data_size = sizeof(u32) + name_len;
     request.data = malloc(request.data_size);
 
@@ -100,6 +111,7 @@ libfs_request_t libfs_request_rename_pack(const libfs_request_rename_t* request_
 
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_RENAME;
+    request.sender = getpid();
     request.data_size = old_name_len + new_name_len;
     request.data = malloc(request.data_size);
 
@@ -121,6 +133,7 @@ libfs_request_t libfs_request_unlink_pack(const libfs_request_unlink_t* request_
 
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_UNLINK;
+    request.sender = getpid();
     request.data_size = name_len;
     request.data = malloc(request.data_size);
 
@@ -140,6 +153,7 @@ libfs_request_t libfs_request_open_pack(const libfs_request_open_t* request_open
 
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_OPEN;
+    request.sender = getpid();
     request.data_size = sizeof(u32) + name_len;
     request.data = malloc(request.data_size);
 
@@ -160,6 +174,7 @@ libfs_request_open_t libfs_request_open_unpack(const libfs_request_t* request) {
 libfs_request_t libfs_request_read_pack(const libfs_request_read_t* request_read) {
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_READ;
+    request.sender = getpid();
     request.data_size = sizeof(fd_type) + sizeof(u32);
     request.data = malloc(request.data_size);
 
@@ -178,6 +193,7 @@ libfs_request_read_t libfs_request_read_unpack(const libfs_request_t* request) {
 libfs_request_t libfs_request_write_pack(const libfs_request_write_t* request_write) {
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_WRITE;
+    request.sender = getpid();
     request.data_size = sizeof(fd_type) + sizeof(usize) + request_write->size;
     request.data = malloc(request.data_size);
 
@@ -199,6 +215,7 @@ libfs_request_write_t libfs_request_write_unpack(const libfs_request_t* request)
 libfs_request_t libfs_request_seek_pack(const libfs_request_seek_t* request_seek) {
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_SEEK;
+    request.sender = getpid();
     request.data_size = sizeof(fd_type) + sizeof(isize);
     request.data = malloc(request.data_size);
 
@@ -217,6 +234,7 @@ libfs_request_seek_t libfs_request_seek_unpack(const libfs_request_t* request) {
 libfs_request_t libfs_request_close_pack(const libfs_request_close_t* request_close) {
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_CLOSE;
+    request.sender = getpid();
     request.data_size = sizeof(fd_type);
     request.data = malloc(request.data_size);
 

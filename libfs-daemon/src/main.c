@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 
 #include "request.h"
 #include "response.h"
@@ -12,7 +13,7 @@ int main(int argc, char* argv[]) {
     }
 
     libfs_request_create_t request = {
-        .mode = 0777, // octal
+        .mode = 0777,  // octal
         .name = name,
     };
 
@@ -35,6 +36,10 @@ int main(int argc, char* argv[]) {
 
     libfs_request_create_t unpacked_request_create =
         libfs_request_create_unpack(&unpacked_request);
+
+    printf("my pid: %d\n", getpid());
+
+    printf("sender: %d\n", unpacked_request.sender);
 
     printf("mode: %o, name: %s\n", unpacked_request_create.mode, unpacked_request_create.name);
 

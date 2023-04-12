@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sys/types.h>
+
 #include "types.h"
 
 typedef enum libfs_request_kind {
@@ -16,6 +18,7 @@ typedef enum libfs_request_kind {
 
 typedef struct libfs_request {
     libfs_request_kind_t kind;
+    pid_t sender;
     usize data_size;
     u8* data;
 } libfs_request_t;
