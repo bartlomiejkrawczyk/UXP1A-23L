@@ -24,9 +24,13 @@ void libfs_response_free(libfs_response_t response) {
     }
 }
 
-const u8* libfs_response_serialize(const libfs_response_t* response, usize* size) {
-    *size = sizeof(int) + sizeof(usize) + response->data_size;
-    u8* data = malloc(*size);
+usize libfs_response_size(const libfs_response_t* response) {
+    return sizeof(int) + sizeof(usize) + response->data_size;
+}
+
+u8* libfs_response_serialize(const libfs_response_t* response) {
+    usize size = libfs_response_size(response);
+    u8* data = malloc(size);
 
     memcpy(data, &response->status, sizeof(int));
     memcpy(data + sizeof(usize), &response->data_size, sizeof(usize));

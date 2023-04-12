@@ -28,9 +28,13 @@ void libfs_request_free(libfs_request_t request) {
     }
 }
 
-u8* libfs_request_serialize(const libfs_request_t* request, usize* size) {
-    *size = sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize) + request->data_size;
-    u8* data = malloc(*size);
+usize libfs_request_size(const libfs_request_t* request) {
+    return sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize) + request->data_size;
+}
+
+u8* libfs_request_serialize(const libfs_request_t* request) {
+    usize size = sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize) + request->data_size;
+    u8* data = malloc(size);
 
     memcpy(data, &request->kind, sizeof(libfs_request_kind_t));
     memcpy(data + sizeof(libfs_request_kind_t), &request->sender, sizeof(pid_t));

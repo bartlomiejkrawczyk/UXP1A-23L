@@ -20,8 +20,8 @@ int main(int argc, char* argv[]) {
 
     libfs_request_t packed_request = libfs_request_create_pack(&request);
 
-    usize buffer_size;
-    u8* buffer = libfs_request_serialize(&packed_request, &buffer_size);
+    usize buffer_size = libfs_request_size(&packed_request);
+    u8* buffer = libfs_request_serialize(&packed_request);
     // serialize of the request copies relevant data into the buffer.
     // We can free the request now.
     libfs_request_free(packed_request);

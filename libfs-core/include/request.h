@@ -23,6 +23,9 @@ typedef struct libfs_request {
     u8* data;
 } libfs_request_t;
 
+// Returns the size of the request.
+usize libfs_request_size(const libfs_request_t* request);
+
 // Creates a new request with the given kind and data. The data is copied.
 libfs_request_t libfs_request_new(libfs_request_kind_t kind, usize data_size, u8* data);
 // Frees the request's data. Request can be assumed to be invalid after this call.
@@ -30,7 +33,7 @@ void libfs_request_free(libfs_request_t request);
 
 // Serializes the request into a buffer. The buffer is allocated with malloc and must be freed
 // by the caller. The size of the buffer is returned in size.
-u8* libfs_request_serialize(const libfs_request_t* request, usize* size);
+u8* libfs_request_serialize(const libfs_request_t* request);
 // Deserializes a request from a buffer. The buffer is not freed.
 libfs_request_t libfs_request_deserialize(const u8* data);
 
