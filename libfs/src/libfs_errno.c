@@ -1,8 +1,9 @@
 #include "libfs_errno.h"
 
 #include <stdio.h>
+#include <threads.h>
 
-int libfs_errno;
+thread_local int libfs_errno;
 
 void libfs_set_errno(int errno) {
     libfs_errno = errno;
