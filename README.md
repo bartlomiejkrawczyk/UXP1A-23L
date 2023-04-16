@@ -171,9 +171,9 @@ int libfs_symlink(const char* source, const char* destination);
 
 <!-- Podział na moduły i strukturę komunikacji między nimi (silnie wskazany rysunek). -->
 
-```{.mermaid width=50%}
+```mermaid
 flowchart LR
-    subgraph client-daemon message types
+    subgraph Client-Daemon\nMessage Types
         libfs-core[libfs-core.a]
     end
 
