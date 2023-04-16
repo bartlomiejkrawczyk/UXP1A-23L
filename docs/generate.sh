@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-INPUT="README.md"
+INPUT="../README.md"
 CONFIG="metadata.yaml"
 OUTPUT="uxp1a.pdf"
 
