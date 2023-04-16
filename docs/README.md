@@ -1,26 +1,15 @@
-# Unix - architektura, programowanie i administrowanie
-
-Studenci:
-```
-Stanisław Zagórowski (lider),
-Bartłomiej Krawczyk,
-Mateusz Brzozowski,
-Adam Sudoł
-```
-
-Data przekazania projektu wstępnego:
-**19.04.2023**
-
-# 1. Temat zadania
+# Temat zadania
 Napisać bibliotekę implementującą prosty system plików z operacjami zdefiniowanymi niżej.
 
 Wariant: **W11 + W22**
 
-### Założenia podstawowe:
+## Założenia podstawowe:
+
 - Biblioteka statyczna (.o lub .a), nagłówek .h oraz serwis (demon) [można też zrealizować jako bibliotekę .so]
 - Pliki przechowywane są w jednym katalogu (struktura płaska, brak podkatalogów)
 - Tylko pliki zwykłe (regular)
 - Funkcje (działanie funkcji wynika z jej nazwy przez analogię do podobnej funkcji systemowej):
+
 ```c
 fd_type libfs_create(char *name, long mode); // libfs_open nie tworzy pliku
 
@@ -40,48 +29,50 @@ int libfs_seek(fd_type fd, long int offset); // offset + lub - od akt. pozycji
 
 int libfs_close(fd_type fd);
 ```
+
 - Dodatkowo:
     - Kod powrotu - analogicznie do funkcji systemowych, dodatkowo zmienna `libfs_errno` powinna być ustawiana analogicznie do tego, jak dzieje się to dla zmiennej `errno`.
     - W razie wątpliwości dotyczących zachowania danej funkcji, należy przyjąć w miarę możności zachowanie maksymalnie zbliżone do odpowiadającej funkcji systemowej.
     - O ile w wariancie nie podano inaczej, kontrola praw dostępu odbywa się poprzez standardowe mechanizmy systemu, demon działa z tymi samymi uprawnieniami co użytkownik. Obsługę uprawnień należy przeanalizować i opisać.
     - Pliki mogą (ale nie muszą) być przechowywane w dedykowanym katalogu demona (alternaywnie: w pamięci).
 
-### Wariant implementacyjny
+## Wariant implementacyjny
 Implementację komunikacji pomiedzy biblioteką a serwisem należy zrealizować poprzez **potoki nazwane (FIFO)**
 
 
-### Wariant funkcjonalny
+## Wariant funkcjonalny
 Dodatkowo należy zaimplementować:
+
 - Dodać obsługę funkcji typu `stat()` oraz wynikających z niej atrybutów: wielkości, znaczników czasu.
 - Dodać obsługę funkcji analogicznej do `link()`/`symlink()`
 
-### Testowanie
+## Testowanie
 Testy wymagają napisania programu lub programów (i ewentualnie skryptów) pokrywajacych funkcjonalność, przypadki brzegowe, obsługę błędów, itp.
 
 Testy mogą zawierać prosty tekstowy interpreter pozwalający na uruchamianie poszczególnych funkcji w trybie konwersacyjnym. Dozwolone jest też napisanie szeregu prostych programów testowych, w takim przypadku zalecane jest stworzenie skryptów parametryzujących różne wywołania takich programów.
 
-#### Miejsce realizacji:
+### Miejsce realizacji:
 Dowolny system Unix/Linux zgodny z POSIX
 
 <!-- TODO: -->
 
-# 2. Interpretecja treści zadania
+# Interpretecja treści zadania
 Zdecydowaliśmy się przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/state/libfs`.
 
 ## Opisy funkcji
 <!-- wymaganych oraz dodatkowych -->
 
-**Stwórz Plik**
+**Stwórz plik**
 ```c
 fd_type libfs_create(char *name, long mode);
 ```
 
-**Zmień Uprawnienia do Pliku**
+**Zmień uprawnienia do pliku**
 ```c
 int libfs_chmode(char *name, long mode);
 ```
 
-**Zmień Nazwę Pliku**
+**Zmień nazwę pliku**
 ```c
 int libfs_rename(char *oldname, char *newname);
 ```
@@ -90,40 +81,46 @@ int libfs_rename(char *oldname, char *newname);
 int libfs_unlink(char *name);
 ```
 
-**Otwórz Isniejący Plik**
+**Otwórz isniejący plik**
 
 Wspieramy flagi biblioteczne:
+
 - O_RD
 - O_WR
 - O_RDWR
+
 <!-- - najpierw sprawdzamy czy plik istnieje, dopiero później wykonujemy open -->
 ```c
 fd_type libfs_open(char *name, int flags);
 ```
 
-**Odczyt z Deskryptora Pliku**
+**Odczyt z deskryptora pliku**
+
 ```c
 int libfs_read(fd_type fd, char *buf, unsigned int size);
 ```
-**Zapis do Deskryptora Pliku**
+
+**Zapis do deskryptora pliku**
+
 ```c
 int libfs_write(fd_type fd, char *buf, unsigned int size);
 ```
 
-**Zmień Położenie Przesunięcia w czasie Odczytu/Zapisu do Pliku**
+**Zmień położenie przesunięcia w czasie odczytu/zapisu do pliku**
 
 Położenie zmieniane relatywnie do aktualnej pozycji w źródle.
+
 ```c
 int libfs_seek(fd_type fd, long int offset);
 ```
 
-**Zamknięcie Deskryptora Pliku**
+**Zamknięcie deskryptora pliku**
+
 ```c
 int libfs_close(fd_type fd);
 ```
 
-**Pobranie Statusu Pliku**
-
+**Pobranie statusu pliku**
 
 `struct libfs_stat_t` jest okrojoną wersją `struct stat` ze standardów. Usunięte są pola nam niepotrzebne, np. device ID lub user ID bądź group ID. Zakładamy że nasz system plików jest płaski, tzn. bez podkatalogów i istnieje w predefiniowanym miejscu na dysku. Jako że daemon pracuje z uprawnieniami użytkownika wykonującego do niego zapytania, pliki użytkownika biblioteki muszą znajdować się w miejscu w pełni dostępnym dla daemona, co ogranicza nas do `$HOME` użytkownika. Dane te byłyby więc stałe między plikami.
 
@@ -147,31 +144,34 @@ int libfs_stat(const char *restrict pathname,
                struct libfs_stat_t *restrict statbuf);
 ```
 
-**Dodanie Nowej Nazwy do Isniejącego Pliku**
+**Dodanie nowej nazwy do isniejącego pliku**
+
 ```c
 int libfs_link(const char* source, const char* destination);
 ```
 
-**Dodanie Aliasu do Ścieżki Pliku**
+**Dodanie aliasu do ścieżki pliku**
+
 ```c
 int libfs_symlink(const char* source, const char* destination);
 ```
 
-# 3. Opis Funkcjonalny "Black-Box"
+# Opis funkcjonalny "Black-Box"
 <!-- Krótki opis funkcjonalny – “black-box”, najlepiej w punktach. -->
+
 - Udostępniamy prosty system plików w jednym katalogu bez podkatalogów.
 - Obsługuje tylko pliki zwykłe, dowiązania twarde i symboliczne.
 - Dostępne operacje to: tworzenie, zmiana trybu, zmiana nazwy, usuwanie, otwieranie, odczyt i zapis danych, przesunięcie wskaznika pozycji, zamknięcie pliku, pobranie statusu, dodanie twardych oraz symbolicznych dowiązań.
 - Funkcje zwracają kod powrotu i ustawiają zmienną libfs_errno, która informuje o błędach.
 - Obsługa uprawnień jest zgodna z mechanizmami systemowymi, systemy plików nie są dzielone między użytkownikami.
 
-# 4. Opis rozwiązania
+# Opis rozwiązania
 
 <!-- Opis i analizę poprawności stosowanych: struktur danych, metod komunikacja, metod synchronizacji, moduły wraz z przepływem sterowania i danych między nimi. -->
 
 <!-- Podział na moduły i strukturę komunikacji między nimi (silnie wskazany rysunek). -->
 
-```mermaid
+```{.mermaid width=50%}
 flowchart LR
     subgraph client-daemon message types
         libfs-core[libfs-core.a]
@@ -233,7 +233,7 @@ echo $content
 
 <!-- Szczegółowy opis interfejsu użytkownika. -->
 
-# 5. Współbieżność
+# Współbieżność
 
 <!-- Koncepcja realizacji współbieżności. -->
 
@@ -262,15 +262,17 @@ flowchart TB
 ```
 
 
-# 6. Implementacja
+# Implementacja
 <!-- Zarys koncepcji implementacji (język, biblioteki, narzędzia, etc.). -->
 
 **Język**: C++17
 
 **Biblioteki**:
+
 - `unistd.h`
 
 **Narzędzia**:
+
 - **Kompilator**: GCC, kompilowanie z `-Wall -Werror -Wextra -Wconversion -Wpedantic` 
 - **Formatowanie**: `clang-format`
 - **Build System**: GNU `make`. Każdy pod-projekt (`libfs`, `libfs-core`, `libfs-daemon` itd.) ma własny `Makefile`, plus główny, agregujący je.
@@ -280,7 +282,7 @@ Biblioteka będzie budowana jako archiwum `.a`.
 
 <!-- Opis wykorzystanych narzędzi, itp. -->
 
-# 7. Testowanie
+# Testowanie
 
 <!-- Zarys koncepcji testów -->
 Do testowania służyć będą małe programy wołające funkcje biblioteczne. Aby kompleksowo przetestować poszczególne przypadki, każdy przypadek użycia będzie reprezentowany skryptem bash, który będzie uruchamiać małe programy w zadanej kolejności.

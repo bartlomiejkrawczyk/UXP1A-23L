@@ -1,0 +1,58 @@
+# Informacje dotyczące pracy:
+title-pl: "Unix - architektura, programowanie i administrowanie"
+
+authorfirst: "Stanisław Zagórowski (lider)"
+albumfirst: "??????"
+
+authorsecond: "Mateusz Brzozowski"
+albumsecond: "310608"
+
+authorthird: "Bartłomiej Krawczyk"
+albumthird: "310774"
+
+authorfourth: "Adam Sudoł"
+albumfourth: "??????"
+
+institute: "Automatyki i Informatyki Stosowanej"
+faculty: "eiti"
+speciality: "Inżynieria Oprogramowania"
+subject: "Informatyka"
+
+bibliography:
+- ./bibliography.bib
+lang: pl
+# Wyłączenie akapitów:
+parindent: false
+# Kolor cytowań:
+citecolor: "666666"
+# Kolor url:
+urlcolor:  "444444"
+# Kolor plików:
+filecolor: "A50000"
+# Kolor tekstu w spisie treści:
+linkcolor:  "000000"
+# Kolory dla --listings
+listing-background: FFFFFF
+listing-keyword: fb3b11
+listing-keyword-2: 8400FF
+listing-keyword-3: 000000
+listing-string: 009933
+listing-text: 000000
+listing-numbers: b3b2b3
+listing-comment: 8e8e8e
+# Kolor obramowania cytatów:
+blockquotebordercolor: "4576cc"
+# Kolor tekstu cytatów
+blockquotetextcolor: "333333"
+# Forsowanie numerów linii dla wszystkich fragmentów
+forcelinenos: true
+# Położenie numerów linii, right lub left
+linenos: "left"
+# Kolor numerów linii:
+linenoscolor: "4576cc"
+# Kolor zaznaczenia linii z użyciem \emphasize, nie działa dla --listings, które jest rekomendowane,
+# ponieważ dla highlightingu z fvextra nie działa spis fragmentów kodu.
+emphasizecolor: "c2d7fc"
+# Rozmiar czcionki dla bloków kodu
+# Dostępne opcje: tiny, scriptsize, footnotesize, small, normalsize, large, Large, LARGE, huge, Huge
+codefontsize: "footnotesize"
