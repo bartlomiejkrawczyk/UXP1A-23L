@@ -171,6 +171,90 @@ int libfs_symlink(const char* source, const char* destination);
 
 <!-- Podział na moduły i strukturę komunikacji między nimi (silnie wskazany rysunek). -->
 
+## Struktury danych
+
+Przyjęliśmy następującą konwencję nazewnictwa:
+
+- `Request` są to komunikaty klienta do demona
+- `Response` są to odpowiedzi demona do klienta
+
+Dla każdej funkcji stworzymy struktury, posiadają pola, odpowiadające parametrom funkcji. Przykładowe struktury:
+```c
+typedef struct libfs_request_create {
+    char* name;
+    u32 mode;
+} libfs_request_create_t;
+
+typedef struct libfs_request_write {
+    fd_type fd;
+    usize size;
+    u8* data;
+} libfs_request_write_t;
+```
+
+Struktury, przed wysłaniem do demona Pakowane są do standardowego formatu request'u:
+
+```c
+typedef struct libfs_request {
+    libfs_request_kind_t kind;
+    pid_t sender;
+    usize data_size;
+    u8* data;
+} libfs_request_t;
+```
+
+Podobnie sprawa wygląda w drugą stronę, jednakże w tym wypadku nie potrzebujemy informacji o tym, od którego procesu dana informacja pochodzi.
+
+```c
+typedef struct libfs_response {
+    int status;
+    usize data_size;
+    u8* data;
+} libfs_response_t;
+```
+
+## Metody Komunikacji i Synchronizacji
+<!-- Koncepcja realizacji współbieżności. -->
+
+```mermaid
+flowchart TB
+    D[Libfs Daemon]
+    FM[daemon request FIFO]
+
+    FM --> D
+
+    C1[Client 1]
+
+
+    C2[Client 2]
+
+    C1 --> FM
+    C2 --> FM
+
+    D -- client 1 fifo --> C1
+    D -- client 2 fifo --> C2
+
+```
+
+Demon blokuje się na kolejce, czeka, aż coś zostanie w niej umieszczone, jeżeli coś znajduje się w kolejce, wczytuje strukturę, która się w niej znajduje. Następuje zapis do pamięci, parsowanie oraz wykonują się odpowiednie przetworzenia. Na koniec na podstawie sendera wysyła odpowiedź do odpowiedniej klienckiej kolejki. Proces ten jest powtarzany.
+
+Komunikacja w dwie strony dobywa się poprzez przesłanie poniższych struktur:
+
+- Struktura przesyłana do demona to `libfs_request`
+- Struktura przysłana do klienta to `libfs_response`
+
+Demon posiada jedną kolejkę (daemon request FIFO) z której odczytuje zapisane przez klientów zapytania.
+
+Każdy z klientów posiada dedykowaną dla siebie kolejkę FIFO (client x fifo) z której będzie czytał zapisane przez Demona odpowiedzi.
+
+Klienckie funkcje biblioteczne będą odpowiedzialne, za utworzenie własnych kolejek, podobnie w przypadku demona, który również będzie tworzył własną kolejkę.
+
+Klient przetwarza zapytania, następnie odsyła je z powrotem do demona.
+
+Synchronizacja na poziomie kolejek klienckich nie jest potrzebna, ponieważ tylko jeden proces zapisuje/odczytuje z kolejki. Natomiast w przypadku kolejki demona, musimy zapewnić synchronizację zapisów, do tego wykorzystamy funkcję `flock()`, dzięki której jesteśmy w stanie zablokować pisane na tym deskryptorze. Kolejne procesy, które będą chciały zacząć pisać zostaną zablokowane na tej funkcji.
+
+## Moduły
+
 ```mermaid
 flowchart LR
     subgraph Client-Daemon\nMessage Types
@@ -188,11 +272,11 @@ flowchart LR
         libfs-seek
         libfs-close
     end
-    
+
     libfs-core ==> ld[libfs-daemon]
-    
+
     libfs-core ==> libfs[libfs.a]
-    
+
     libfs ==> libfs-create
     libfs ==> libfs-chmode
     libfs ==> libfs-rename
@@ -202,7 +286,7 @@ flowchart LR
     libfs ==> libfs-write
     libfs ==> libfs-seek
     libfs ==> libfs-close
-    
+
     libfs-create <-.-> ld
     libfs-chmode <-.-> ld
     libfs-rename <-.-> ld
@@ -213,6 +297,20 @@ flowchart LR
     libfs-seek <-.-> ld
     libfs-close <-.-> ld
 ```
+
+Rozwiązanie podzielmy na dwie osobne biblioteki `libfs-core.a` oraz `libfs.a`.
+
+W bibliotece `libfs-core.a` zawrzemy funkcjonalność dzieloną przez demona oraz programy klienckie.
+
+Metody, które nie są wymagane przez demona, ale za to są potrzebne do działania programów klienckich zostaną umieszczone w bibliotece `libfs.a`.
+
+Biblioteka `libfs-core.a` będzie zawierała struktury `request` oraz `response`, a także dedykowane metody do serializacji i deserializacji.
+
+Biblioteka `libfs.a` będzie zawierała obsługę odpowiedzi, a także obsługę wartości errno.
+
+Obsługę zapytań `request` zostanie zaimplementowania wewnątrz programu demona, dlatego też nie jest wymagane, aby znalazła się ona w oddzielnej bibliotece.
+
+## Przykładowe wykorzystanie
 
 Przykładowe użycie kilku z tych programów (sprowadzających się z grubsza do wywołania odpowiedniej funkcji biblioteki `libfs.a`) z poziomu bash'a:
 
@@ -233,34 +331,6 @@ echo $content
 
 <!-- Szczegółowy opis interfejsu użytkownika. -->
 
-# Współbieżność
-
-<!-- Koncepcja realizacji współbieżności. -->
-
-```mermaid
-flowchart TB
-    D[Libfs Daemon]
-    FM[daemon request FIFO]
-    S[daemon fifo access semaphore]
-    
-    FM --> D
-    C1 --> S
-    C2 --> S
-
-
-    C1[Client 1]
-
-    
-    C2[Client 2]
-    
-    C1 --> FM
-    C2 --> FM
-    
-    D -- client 1 fifo --> C1
-    D -- client 2 fifo --> C2
-    
-```
-
 
 # Implementacja
 <!-- Zarys koncepcji implementacji (język, biblioteki, narzędzia, etc.). -->
@@ -273,7 +343,7 @@ flowchart TB
 
 **Narzędzia**:
 
-- **Kompilator**: GCC, kompilowanie z `-Wall -Werror -Wextra -Wconversion -Wpedantic` 
+- **Kompilator**: GCC, kompilowanie z `-Wall -Werror -Wextra -Wconversion -Wpedantic`
 - **Formatowanie**: `clang-format`
 - **Build System**: GNU `make`. Każdy pod-projekt (`libfs`, `libfs-core`, `libfs-daemon` itd.) ma własny `Makefile`, plus główny, agregujący je.
 - **Edytor**: VS Code, neovim
