@@ -57,12 +57,13 @@ Dowolny system Unix/Linux zgodny z POSIX
 <!-- TODO: -->
 
 # Interpretecja treści zadania
-Zdecydowaliśmy się przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/state/libfs`.
+
+Pliki oraz operacje na plikach będą obsługiwane za pośrednictwem *demona*. Serwis będzie przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/state/libfs`. Biblioteka będzie udostępniała podstawowy interfejs oraz załatwi komunikację z demonem poprzez nazwane kolejki.
 
 ## Opisy funkcji
 <!-- wymaganych oraz dodatkowych -->
 
-**Stwórz plik**
+**Stwórz plik lub nadpisz istniejący**
 ```c
 fd_type libfs_create(char *name, long mode);
 ```
@@ -76,6 +77,7 @@ int libfs_chmode(char *name, long mode);
 ```c
 int libfs_rename(char *oldname, char *newname);
 ```
+
 **Usuń nazwę i ewentualnie plik, do którego się odnosi**
 ```c
 int libfs_unlink(char *name);
@@ -83,24 +85,19 @@ int libfs_unlink(char *name);
 
 **Otwórz isniejący plik**
 
-Wspieramy flagi biblioteczne:
+Funkcja `libfs_open` nie jest odpowiedzialna za utworzenie pliku.
 
-- O_RD
-- O_WR
-- O_RDWR
-
-<!-- - najpierw sprawdzamy czy plik istnieje, dopiero później wykonujemy open -->
 ```c
 fd_type libfs_open(char *name, int flags);
 ```
 
-**Odczyt z deskryptora pliku**
+**Odczyt z pliku wskazywanego przez deskryptor**
 
 ```c
 int libfs_read(fd_type fd, char *buf, unsigned int size);
 ```
 
-**Zapis do deskryptora pliku**
+**Zapis do pliku wskazywanego przez deskryptor**
 
 ```c
 int libfs_write(fd_type fd, char *buf, unsigned int size);
@@ -173,12 +170,14 @@ int libfs_symlink(const char* source, const char* destination);
 
 ## Struktury danych
 
+W celu komunikacji między procesami ustaliliśmy standardowe formaty komunikatów przesyłanych poprzez kolejki. Pozwoli to nam na prostą obsługę serializacji i deserializacji przesyłanych komunikatów.
+
 Przyjęliśmy następującą konwencję nazewnictwa:
 
 - `Request` są to komunikaty klienta do demona
 - `Response` są to odpowiedzi demona do klienta
 
-Dla każdej funkcji stworzymy struktury, posiadają pola, odpowiadające parametrom funkcji. Przykładowe struktury:
+Dla każdej funkcji stworzyliśmy struktury, które posiadają pola, odpowiadające parametrom funkcji. Przykładowe struktury:
 ```c
 typedef struct libfs_request_create {
     char* name;
@@ -192,7 +191,7 @@ typedef struct libfs_request_write {
 } libfs_request_write_t;
 ```
 
-Struktury, przed wysłaniem do demona Pakowane są do standardowego formatu request'u:
+Struktury te przed wysłaniem do demona pakowane są do standardowego formatu request'u:
 
 ```c
 typedef struct libfs_request {
@@ -236,22 +235,20 @@ flowchart TB
 
 ```
 
-Demon blokuje się na kolejce, czeka, aż coś zostanie w niej umieszczone, jeżeli coś znajduje się w kolejce, wczytuje strukturę, która się w niej znajduje. Następuje zapis do pamięci, parsowanie oraz wykonują się odpowiednie przetworzenia. Na koniec na podstawie sendera wysyła odpowiedź do odpowiedniej klienckiej kolejki. Proces ten jest powtarzany.
+Demon blokuje się na kolejce, czeka, aż coś zostanie w niej umieszczone. W momencie gdy coś pojawi się w kolejce, demon wczytuje pełną strukturę. Następnie przetwarza odczytaną strukturę na odpowiadającą otrzymanemu typowi. Następuje obsługa requestu - demon wykonuje odpowiednie przetworzenia. Na koniec na podstawie otrzymanej w requescie wartości pid_t sendera wysyła odpowiedź do odpowiedniej klienckiej kolejki. Proces ten jest powtarzany.
 
-Komunikacja w dwie strony dobywa się poprzez przesłanie poniższych struktur:
+Komunikacja w dwie strony dobywa się poprzez przesłanie struktur:
 
-- Struktura przesyłana do demona to `libfs_request`
-- Struktura przysłana do klienta to `libfs_response`
+- struktura przesyłana do demona to `libfs_request`
+- struktura przysłana do klienta to `libfs_response`
 
 Demon posiada jedną kolejkę (daemon request FIFO) z której odczytuje zapisane przez klientów zapytania.
 
 Każdy z klientów posiada dedykowaną dla siebie kolejkę FIFO (client x fifo) z której będzie czytał zapisane przez Demona odpowiedzi.
 
-Klienckie funkcje biblioteczne będą odpowiedzialne, za utworzenie własnych kolejek, podobnie w przypadku demona, który również będzie tworzył własną kolejkę.
+Klienckie funkcje biblioteczne będą odpowiedzialne, za utworzenie własnych kolejek, podobnie w przypadku demona, który sam będzie tworzył własną kolejkę.
 
-Klient przetwarza zapytania, następnie odsyła je z powrotem do demona.
-
-Synchronizacja na poziomie kolejek klienckich nie jest potrzebna, ponieważ tylko jeden proces zapisuje/odczytuje z kolejki. Natomiast w przypadku kolejki demona, musimy zapewnić synchronizację zapisów, do tego wykorzystamy funkcję `flock()`, dzięki której jesteśmy w stanie zablokować pisane na tym deskryptorze. Kolejne procesy, które będą chciały zacząć pisać zostaną zablokowane na tej funkcji.
+Synchronizacja na poziomie kolejek klienckich nie jest potrzebna, ponieważ tylko jeden proces zapisuje do kolejki i jeden odczytuje. Natomiast w przypadku kolejki demona, musimy zapewnić synchronizację zapisów, do tego wykorzystamy funkcję `flock()`, dzięki której jesteśmy w stanie zablokować procesy chcące pisać do kolejki w tym samym czasie. Kolejne procesy, które będą chciały zacząć pisać zostaną zablokowane na tej funkcji do czasu zwolnienia blokady.
 
 ## Moduły
 
@@ -306,9 +303,9 @@ Metody, które nie są wymagane przez demona, ale za to są potrzebne do działa
 
 Biblioteka `libfs-core.a` będzie zawierała struktury `request` oraz `response`, a także dedykowane metody do serializacji i deserializacji.
 
-Biblioteka `libfs.a` będzie zawierała obsługę odpowiedzi, a także obsługę wartości errno.
+Biblioteka `libfs.a` będzie zawierała obsługę odpowiedzi, a także obsługę wartości `errno`.
 
-Obsługę zapytań `request` zostanie zaimplementowania wewnątrz programu demona, dlatego też nie jest wymagane, aby znalazła się ona w oddzielnej bibliotece.
+Obsługa zapytań `request` zostanie zaimplementowania wewnątrz programu demona, dlatego też nie jest wymagane, aby znalazła się ona w oddzielnej bibliotece.
 
 ## Przykładowe wykorzystanie
 
@@ -346,7 +343,7 @@ echo $content
 - **Kompilator**: GCC, kompilowanie z `-Wall -Werror -Wextra -Wconversion -Wpedantic`
 - **Formatowanie**: `clang-format`
 - **Build System**: GNU `make`. Każdy pod-projekt (`libfs`, `libfs-core`, `libfs-daemon` itd.) ma własny `Makefile`, plus główny, agregujący je.
-- **Edytor**: VS Code, neovim
+- **Edytor**: VS Code / neovim
 
 Biblioteka będzie budowana jako archiwum `.a`.
 
@@ -359,9 +356,6 @@ Do testowania służyć będą małe programy wołające funkcje biblioteczne. A
 
 Skrypty te będą wywoływane przez główny "runner", `test.sh`, który będzie porównywać ich output i exit code z oczekiwanymi.
 
-
 <!--  Szczegółowy opis testów i wyników testowania -->
-
-
 
 <!-- Należy pamiętać, że nie mamy opisywać kwestii znanych i omawianych na wykładzie, np. zasady funkcjonowania API i funkcji systemowych, standardowych narzędzi programistycznych, itp. -->
