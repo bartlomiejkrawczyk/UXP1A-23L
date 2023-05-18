@@ -8,14 +8,19 @@ MESSAGE_COLOR='\033[94;1m'
 NC='\033[0m'
 
 usage() {
-    echo "Usage: $0 -d <directory> -t <test-pattern>"
+    echo "Usage: $0 -d <directory> -t <test-pattern> [-n (no cleanup)]"
     exit 1
+}
+
+clean_up_libfs() {
+    rm -rf "$HOME/.local/share/libfs"
 }
 
 DIRECTORY="."
 TEST='*'
+CLEANUP=1
 
-while getopts "d:t:" opt; do
+while getopts "d:t:n" opt; do
     case $opt in
         d)
             DIRECTORY=$OPTARG
@@ -23,11 +28,20 @@ while getopts "d:t:" opt; do
         t)
             TEST=$OPTARG
             ;;
+        n)
+            CLEANUP=0
+            ;;
         *)
             usage
             ;;
     esac
 done
+
+# Clean up libfs
+
+if [ $CLEANUP -eq 1 ]; then
+    clean_up_libfs
+fi
 
 # Gather the script files with their expected outputs
 
