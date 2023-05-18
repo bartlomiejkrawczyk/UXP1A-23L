@@ -1,3 +1,5 @@
+#pragma once
+
 #include "request.h"
 
 typedef void (*dispatcher_fn)(libfs_request_t);

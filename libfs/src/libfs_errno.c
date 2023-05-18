@@ -1,6 +1,5 @@
 #include "libfs_errno.h"
 
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <threads.h>

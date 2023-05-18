@@ -1,12 +1,9 @@
 #include <fcntl.h>
 #include <signal.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdnoreturn.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 // If we decide to log to a file, uncomment this.
@@ -14,8 +11,6 @@
 
 #include "libfs_locations.h"
 #include "log.h"
-#include "request.h"
-#include "response.h"
 #include "types.h"
 #include "utils.h"
 #include "globals.h"

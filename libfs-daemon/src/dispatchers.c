@@ -1,12 +1,9 @@
 #include "dispatchers.h"
 
-#include <asm-generic/errno-base.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include "globals.h"

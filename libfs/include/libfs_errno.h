@@ -1,4 +1,5 @@
 #pragma once
+
 #include <threads.h>
 
 // Error codes
@@ -24,5 +25,6 @@ const char* libfs_strerror(int err);
 
 void libfs_perror(const char* msg);
 
-#define LOG_LIBFS_ERRNO(message) \
-    printf(TERMCOLOR(BRIGHT_RED, "[ERROR] ") message ": %s (%s:%d)\n", libfs_strerror(libfs_errno), __FILE__, __LINE__);
+#define LOG_LIBFS_ERRNO(message)                                       \
+    printf(TERMCOLOR(BRIGHT_RED, "[ERROR] ") message ": %s (%s:%d)\n", \
+           libfs_strerror(libfs_errno), __FILE__, __LINE__);
