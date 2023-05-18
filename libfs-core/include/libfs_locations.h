@@ -16,7 +16,6 @@ isize libfs_get_storage_path(char* buffer, usize max_size);
 isize libfs_get_pipes_path(char* buffer, usize max_size);
 
 // Get the path to the main pipe.
-// The path is guaranteed to end with a slash.
 // The string is written to the buffer and the number of bytes written is returned.
 // If the buffer is too small, -1 is returned.
 isize libfs_get_main_pipe_path(char* buffer, usize max_size);
@@ -32,3 +31,6 @@ isize libfs_get_files_path(char* buffer, usize max_size);
 // The string is written to the buffer and the number of bytes written is returned.
 // If the buffer is too small, -1 is returned.
 isize libfs_get_process_pipe_path(char* buffer, usize max_size, pid_t process_id);
+
+// Ensure that the directories for the storage, pipes and files exist.
+isize libfs_ensure_directories(void);

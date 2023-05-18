@@ -1,9 +1,9 @@
-.PHONY: clean libfs-temp-test
+.PHONY: clean libfs-create
 
-all: libfs-temp-test
+all: libfs-create
 
 clean:
-	make -C libfs-temp-test clean
+	make -C libfs-create clean
 
-libfs-temp-test:
-	make -C libfs-temp-test all
+libfs-create:
+	make -C libfs-create all

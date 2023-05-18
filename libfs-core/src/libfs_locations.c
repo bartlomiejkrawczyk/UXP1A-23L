@@ -3,7 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
+
+#include "types.h"
 
 #define LIBFS_STORAGE_PATH "/.local/share/libfs/"
 #define LIBFS_PIPES_PATH "pipes/"
@@ -77,4 +81,39 @@ isize libfs_get_process_pipe_path(char* buffer, usize max_size, pid_t process_id
     sprintf(process_id_str, "%d", process_id);
     strcat(buffer, process_id_str);
     return (isize)total_len;
+}
+
+isize libfs_ensure_directories(void) {
+    char buffer[256];
+    isize len = libfs_get_storage_path(buffer, sizeof(buffer));
+    if (len < 0) {
+        return -1;
+    }
+    if (access(buffer, F_OK) < 0) {
+        if (mkdir(buffer, 0700) < 0) {
+            return -1;
+        }
+    }
+
+    len = libfs_get_pipes_path(buffer, sizeof(buffer));
+    if (len < 0) {
+        return -1;
+    }
+    if (access(buffer, F_OK) < 0) {
+        if (mkdir(buffer, 0700) < 0) {
+            return -1;
+        }
+    }
+
+    len = libfs_get_files_path(buffer, sizeof(buffer));
+    if (len < 0) {
+        return -1;
+    }
+    if (access(buffer, F_OK) < 0) {
+        if (mkdir(buffer, 0700) < 0) {
+            return -1;
+        }
+    }
+
+    return 0;
 }
