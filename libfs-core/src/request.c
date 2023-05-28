@@ -33,7 +33,8 @@ usize libfs_request_size(const libfs_request_t* request) {
 }
 
 u8* libfs_request_serialize(const libfs_request_t* request) {
-    usize size = sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize) + request->data_size;
+    usize size =
+        sizeof(libfs_request_kind_t) + sizeof(pid_t) + sizeof(usize) + request->data_size;
     u8* data = malloc(size);
 
     memcpy(data, &request->kind, sizeof(libfs_request_kind_t));
@@ -250,4 +251,81 @@ libfs_request_close_t libfs_request_close_unpack(const libfs_request_t* request)
     libfs_request_close_t request_close;
     memcpy(&request_close.fd, request->data, sizeof(fd_type));
     return request_close;
+}
+
+libfs_request_t libfs_request_stat_pack(const libfs_request_stat_t* request_stat) {
+    usize name_len = strlen(request_stat->pathname) + 1;
+
+    libfs_request_t request;
+    request.kind = LIBFS_REQUEST_STAT;
+    request.sender = getpid();
+    request.data_size = name_len + sizeof(libfs_stat_struct_t);
+    request.data = malloc(request.data_size);
+
+    memcpy(request.data, request_stat->pathname, name_len);
+    memcpy(request.data + name_len, request_stat->statbuf, sizeof(libfs_stat_struct_t));
+
+    return request;
+}
+libfs_request_stat_t libfs_request_stat_unpack(const libfs_request_t* request) {
+    libfs_request_stat_t request_stat;
+    // No deep copy, deserialized
+    // request is a "view" of the
+    // serialized data
+    request_stat.pathname = (char*)request->data;
+    usize name_len = strlen(request_stat.pathname) + 1;
+    request_stat.statbuf = (libfs_stat_struct_t*)request->data + name_len;
+    return request_stat;
+}
+
+libfs_request_t libfs_request_link_pack(const libfs_request_link_t* request_link) {
+    usize source_len = strlen(request_link->source) + 1;
+    usize destination_len = strlen(request_link->destination) + 1;
+
+    libfs_request_t request;
+    request.kind = LIBFS_REQUEST_LINK;
+    request.sender = getpid();
+    request.data_size = source_len + destination_len;
+    request.data = malloc(request.data_size);
+
+    memcpy(request.data, request_link->source, source_len);
+    memcpy(request.data + source_len, request_link->destination, destination_len);
+
+    return request;
+}
+libfs_request_link_t libfs_request_link_unpack(const libfs_request_t* request) {
+    libfs_request_link_t request_link;
+    // No deep copy, deserialized
+    // request is a "view" of the
+    // serialized data
+    request_link.source = (char*)request->data;
+    usize source_len = strlen(request_link.source) + 1;
+    request_link.destination = (char*)request->data + source_len;
+    return request_link;
+}
+
+libfs_request_t libfs_request_symlink_pack(const libfs_request_symlink_t* request_symlink) {
+    usize source_len = strlen(request_symlink->source) + 1;
+    usize destination_len = strlen(request_symlink->destination) + 1;
+
+    libfs_request_t request;
+    request.kind = LIBFS_REQUEST_SYMLINK;
+    request.sender = getpid();
+    request.data_size = source_len + destination_len;
+    request.data = malloc(request.data_size);
+
+    memcpy(request.data, request_symlink->source, source_len);
+    memcpy(request.data + source_len, request_symlink->destination, destination_len);
+
+    return request;
+}
+libfs_request_symlink_t libfs_request_symlink_unpack(const libfs_request_t* request) {
+    libfs_request_symlink_t request_symlink;
+    // No deep copy, deserialized
+    // request is a "view" of the
+    // serialized data
+    request_symlink.source = (char*)request->data;
+    usize source_len = strlen(request_symlink.source) + 1;
+    request_symlink.destination = (char*)request->data + source_len;
+    return request_symlink;
 }
