@@ -1,6 +1,6 @@
-.PHONY: clean libfs-chmode libfs-close libfs-create libfs-open libfs-read libfs-rename libfs-seek libfs-unlink libfs-write
+.PHONY: clean libfs-chmode libfs-close libfs-create libfs-link libfs-open libfs-read libfs-rename libfs-seek libfs-stat libfs-symlink libfs-unlink libfs-write
 
-all: libfs-chmode libfs-close libfs-create libfs-open libfs-read libfs-rename libfs-seek libfs-unlink libfs-write
+all: libfs-chmode libfs-close libfs-create libfs-link libfs-open libfs-read libfs-rename libfs-seek libfs-stat libfs-symlink libfs-unlink libfs-write
 
 clean:
 	make -C libfs-chmode clean
@@ -22,6 +22,9 @@ libfs-close:
 libfs-create:
 	make -C libfs-create all
 
+libfs-link:
+	make -C libfs-link all
+
 libfs-open:
 	make -C libfs-open all
 
@@ -33,6 +36,12 @@ libfs-rename:
 
 libfs-seek:
 	make -C libfs-seek all
+
+libfs-stat:
+	make -C libfs-stat all
+
+libfs-symlink:
+	make -C libfs-symlink all
 
 libfs-unlink:
 	make -C libfs-unlink all

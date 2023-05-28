@@ -268,6 +268,9 @@ flowchart LR
         libfs-write
         libfs-seek
         libfs-close
+        libfs-stat
+        libfs-link
+        libfs-symlink
     end
 
     libfs-core ==> ld[libfs-daemon]
@@ -283,6 +286,9 @@ flowchart LR
     libfs ==> libfs-write
     libfs ==> libfs-seek
     libfs ==> libfs-close
+    libfs ==> libfs-stat
+    libfs ==> libfs-link
+    libfs ==> libfs-symlink
 
     libfs-create <-.-> ld
     libfs-chmode <-.-> ld
@@ -293,6 +299,9 @@ flowchart LR
     libfs-write <-.-> ld
     libfs-seek <-.-> ld
     libfs-close <-.-> ld
+    libfs-stat <-.-> ld
+    libfs-link <-.-> ld
+    libfs-symlink <-.-> ld
 ```
 
 Rozwiązanie podzielmy na dwie osobne biblioteki `libfs-core.a` oraz `libfs.a`.
