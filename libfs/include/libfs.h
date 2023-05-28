@@ -26,3 +26,5 @@ int libfs_symlink(const char *source, const char *destination);
 int libfs_unlink(char *name);
 
 int libfs_write(fd_type fd, u8 *buf, unsigned int size);
+
+int parse_mode(const char *mode, usize len);
