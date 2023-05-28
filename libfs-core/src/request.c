@@ -274,7 +274,7 @@ libfs_request_stat_t libfs_request_stat_unpack(const libfs_request_t* request) {
     // serialized data
     request_stat.pathname = (char*)request->data;
     usize name_len = strlen(request_stat.pathname) + 1;
-    request_stat.statbuf = (libfs_stat_struct_t*)request->data + name_len;
+    request_stat.statbuf = (libfs_stat_struct_t*)(request->data + name_len);
     return request_stat;
 }
 

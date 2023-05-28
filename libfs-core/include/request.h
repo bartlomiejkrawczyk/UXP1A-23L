@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/types.h>
+#include <time.h>
 
 #include "types.h"
 
@@ -122,12 +123,12 @@ libfs_request_t libfs_request_close_pack(const libfs_request_close_t* request_cl
 libfs_request_close_t libfs_request_close_unpack(const libfs_request_t* request);
 
 typedef struct libfs_stat_struct {
-    ino_t st_ino;         /* System Inode number */
-    mode_t st_mode;       /* File type and mode */
-    nlink_t st_nlink;     /* Number of hard links */
-    off_t st_size;        /* Total size, in bytes */
-    blksize_t st_blksize; /* Block size for filesystem I/O */
-    blkcnt_t st_blocks;   /* Number of 512B blocks allocated */
+    ino_t st_ino;           /* System Inode number */
+    mode_t st_mode;         /* File type and mode */
+    nlink_t st_nlink;       /* Number of hard links */
+    off_t st_size;          /* Total size, in bytes */
+    __blksize_t st_blksize; /* Block size for filesystem I/O */
+    blkcnt_t st_blocks;     /* Number of 512B blocks allocated */
 
     struct timespec st_atim; /* Time of last access */
     struct timespec st_mtim; /* Time of last modification */
@@ -136,7 +137,7 @@ typedef struct libfs_stat_struct {
 
 typedef struct libfs_request_stat {
     char* pathname;
-    struct libfs_stat_struct_t* statbuf;
+    libfs_stat_struct_t* statbuf;
 } libfs_request_stat_t;
 
 libfs_request_t libfs_request_stat_pack(const libfs_request_stat_t* request_stat);

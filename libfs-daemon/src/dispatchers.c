@@ -71,14 +71,12 @@ void chmode_handler(pid_t sender, const REQUEST_TYPE(chmode) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("chmode");
 }
 
 void close_handler(pid_t sender, const REQUEST_TYPE(close) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("close");
 }
 
 void create_handler(pid_t sender, const REQUEST_TYPE(create) * request) {
@@ -121,10 +119,13 @@ void create_handler(pid_t sender, const REQUEST_TYPE(create) * request) {
         return;
     }
 
+    u8* data = malloc(sizeof(fd_type));
+    memcpy(data, (void*)&fd, sizeof(fd_type));
+
     libfs_response_t response = {
         .status = 0,
         .data_size = sizeof(fd_type),
-        .data = fd,
+        .data = data,
     };
 
     send_response(sender, &response);
@@ -134,7 +135,6 @@ void link_handler(pid_t sender, const REQUEST_TYPE(link) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("link");
 }
 
 void open_handler(pid_t sender, const REQUEST_TYPE(open) * request) {
@@ -146,49 +146,42 @@ void read_handler(pid_t sender, const REQUEST_TYPE(read) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("read");
 }
 
 void rename_handler(pid_t sender, const REQUEST_TYPE(rename) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("rename");
 }
 
 void seek_handler(pid_t sender, const REQUEST_TYPE(seek) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("seek");
 }
 
 void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("stat");
 }
 
 void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("symlink");
 }
 
 void unlink_handler(pid_t sender, const REQUEST_TYPE(unlink) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("unlink");
 }
 
 void write_handler(pid_t sender, const REQUEST_TYPE(write) * request) {
     (void)sender;   // unused
     (void)request;  // unused
     // TODO: implement me
-    LOG_INFO("write");
 }
 
 DISPATCHER_FN_DECL(chmode, chmode_handler)

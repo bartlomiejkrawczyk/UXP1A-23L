@@ -106,7 +106,7 @@ static int request_daemon_response(const libfs_request_t* request, libfs_respons
     return 0;
 }
 
-int libfs_chmode(const char* name, long mode) {
+int libfs_chmode(const char* name, u32 mode) {
     libfs_request_chmode_t chmode_request = {
         .name = (char*)name,
         .mode = mode,
@@ -165,8 +165,8 @@ fd_type libfs_create(const char* path, u32 mode) {
         return -1;
     }
 
-    // TODO: do i need to check if the file descriptor has correct size
-    fd_type file_descriptor = response.data;
+    fd_type file_descriptor;
+    memcpy(&file_descriptor, response.data, response.data_size);
     return file_descriptor;
 }
 
@@ -191,7 +191,7 @@ int libfs_link(const char* source, const char* destination) {
     return 0;
 }
 
-fd_type libfs_open(char* name, int flags) {
+fd_type libfs_open(char* name, u32 flags) {
     libfs_request_open_t open_request = {
         .name = (char*)name,
         .flags = flags,
@@ -209,12 +209,12 @@ fd_type libfs_open(char* name, int flags) {
         return -1;
     }
 
-    // TODO: do i need to check if the file descriptor has correct size
-    fd_type file_descriptor = response.data;
+    fd_type file_descriptor;
+    memcpy(&file_descriptor, response.data, response.data_size);
     return file_descriptor;
 }
 
-int libfs_read(fd_type fd, char* buf, unsigned int size) {
+int libfs_read(fd_type fd, u8* buf, unsigned int size) {
     libfs_request_read_t read_request = {
         .fd = fd,
         .size = size,
@@ -279,7 +279,7 @@ int libfs_seek(fd_type fd, long int offset) {
     return 0;
 }
 
-int libfs_stat(const char* restrict pathname, struct libfs_stat_struct_t* restrict statbuf) {
+int libfs_stat(const char* restrict pathname, libfs_stat_struct_t* restrict statbuf) {
     libfs_request_stat_t stat_request = {
         .pathname = (char*)pathname,
         .statbuf = statbuf,
@@ -341,7 +341,7 @@ int libfs_unlink(char* name) {
     return 0;
 }
 
-int libfs_write(fd_type fd, char* buf, unsigned int size) {
+int libfs_write(fd_type fd, u8* buf, unsigned int size) {
     libfs_request_write_t write_request = {
         .fd = fd,
         .data = buf,
