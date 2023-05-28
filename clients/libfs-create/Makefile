@@ -1,4 +1,4 @@
-BIN_NAME=libfs-temp-test
+BIN_NAME=libfs-create
 
 OBJ_DIR=obj
 
@@ -16,7 +16,7 @@ INCLUDE_PATHS=-I. -I../../libfs-core/include -I../../libfs/include
 CFLAGS=-g -std=c11 -fdiagnostics-color=always
 CXXFLAGS=-g -std=c++17 -fdiagnostics-color=always
 
-LDFLAGS=-L../../libfs-core -l:libfs-core.a -L../../libfs -l:libfs.a
+LDFLAGS=-L../../libfs -l:libfs.a -L../../libfs-core -l:libfs-core.a
 
 WARN_FLAGS=-Wall -Wextra -Wpedantic -Werror -Wconversion -Wno-unused-function
 
