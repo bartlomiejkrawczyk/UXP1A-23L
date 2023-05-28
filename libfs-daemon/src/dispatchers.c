@@ -67,6 +67,20 @@ void send_response(pid_t sender, const libfs_response_t* response) {
     }
 }
 
+void chmode_handler(pid_t sender, const REQUEST_TYPE(chmode) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("chmode");
+}
+
+void close_handler(pid_t sender, const REQUEST_TYPE(close) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("close");
+}
+
 void create_handler(pid_t sender, const REQUEST_TYPE(create) * request) {
     LOG_INFO("mode: %o, name: %s", request->mode, request->name);
 
@@ -107,15 +121,20 @@ void create_handler(pid_t sender, const REQUEST_TYPE(create) * request) {
         return;
     }
 
-    close(fd);
-
     libfs_response_t response = {
         .status = 0,
-        .data_size = 0,
-        .data = NULL,
+        .data_size = sizeof(fd_type),
+        .data = fd,
     };
 
     send_response(sender, &response);
+}
+
+void link_handler(pid_t sender, const REQUEST_TYPE(link) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("link");
 }
 
 void open_handler(pid_t sender, const REQUEST_TYPE(open) * request) {
@@ -123,12 +142,75 @@ void open_handler(pid_t sender, const REQUEST_TYPE(open) * request) {
     LOG_INFO("flags: %u, name: %s", request->flags, request->name);
 }
 
+void read_handler(pid_t sender, const REQUEST_TYPE(read) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("read");
+}
+
+void rename_handler(pid_t sender, const REQUEST_TYPE(rename) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("rename");
+}
+
+void seek_handler(pid_t sender, const REQUEST_TYPE(seek) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("seek");
+}
+
+void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("stat");
+}
+
+void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("symlink");
+}
+
+void unlink_handler(pid_t sender, const REQUEST_TYPE(unlink) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("unlink");
+}
+
+void write_handler(pid_t sender, const REQUEST_TYPE(write) * request) {
+    (void)sender;   // unused
+    (void)request;  // unused
+    // TODO: implement me
+    LOG_INFO("write");
+}
+
+DISPATCHER_FN_DECL(chmode, chmode_handler)
+DISPATCHER_FN_DECL(close, close_handler)
 DISPATCHER_FN_DECL(create, create_handler)
+DISPATCHER_FN_DECL(link, link_handler)
 DISPATCHER_FN_DECL(open, open_handler)
+DISPATCHER_FN_DECL(read, read_handler)
+DISPATCHER_FN_DECL(rename, rename_handler)
+DISPATCHER_FN_DECL(seek, seek_handler)
+DISPATCHER_FN_DECL(stat, stat_handler)
+DISPATCHER_FN_DECL(symlink, symlink_handler)
+DISPATCHER_FN_DECL(unlink, unlink_handler)
+DISPATCHER_FN_DECL(write, write_handler)
 
 dispatcher_fn dispatcher_table[] = {
-    [LIBFS_REQUEST_CREATE] = dispatcher_create,
-    [LIBFS_REQUEST_OPEN] = dispatcher_open,
+    [LIBFS_REQUEST_CHMODE] = dispatcher_chmode, [LIBFS_REQUEST_CLOSE] = dispatcher_close,
+    [LIBFS_REQUEST_CREATE] = dispatcher_create, [LIBFS_REQUEST_LINK] = dispatcher_link,
+    [LIBFS_REQUEST_OPEN] = dispatcher_open,     [LIBFS_REQUEST_READ] = dispatcher_read,
+    [LIBFS_REQUEST_RENAME] = dispatcher_rename, [LIBFS_REQUEST_SEEK] = dispatcher_seek,
+    [LIBFS_REQUEST_STAT] = dispatcher_stat,     [LIBFS_REQUEST_SYMLINK] = dispatcher_symlink,
+    [LIBFS_REQUEST_UNLINK] = dispatcher_unlink, [LIBFS_REQUEST_WRITE] = dispatcher_write,
 };
 
 void dispatch(libfs_request_t request) {
