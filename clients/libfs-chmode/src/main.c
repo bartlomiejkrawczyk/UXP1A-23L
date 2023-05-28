@@ -12,6 +12,7 @@
 int main(int argc, char** argv) {
     if (argc < 2 || argc > 3) {
         LOG_ERROR("usage: %s <path> [mode]", argv[0]);
+        printf("-1");
         return 1;
     }
 
@@ -24,18 +25,21 @@ int main(int argc, char** argv) {
 
         if (mode < 0) {
             LOG_ERROR("invalid mode: %s", argv[2]);
+            printf("-1");
             return 1;
         }
     }
 
-    int result = libfs_create(argv[1], (u32)mode);
+    int result = libfs_chmode(argv[1], (u32)mode);
 
     if (result < 0) {
-        LOG_LIBFS_ERRNO("libfs_create failed");
+        LOG_LIBFS_ERRNO("libfs_chmode failed");
+        printf("-1");
         return 1;
     }
 
-    LOG_INFO("libfs_create succeeded: %d", result);
+    LOG_INFO("libfs_chmode succeeded: %d", result);
+    printf("%d", result);
 
     return 0;
 }

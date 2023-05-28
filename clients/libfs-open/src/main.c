@@ -11,31 +11,33 @@
 
 int main(int argc, char** argv) {
     if (argc < 2 || argc > 3) {
-        LOG_ERROR("usage: %s <path> [mode]", argv[0]);
+        LOG_ERROR("usage: %s <path> [flags]", argv[0]);
+        printf("-1");
         return 1;
     }
 
-    int mode = 0777;
+    int flags = 0;
 
     if (argc == 3) {
-        usize len = strlen(argv[2]);
+        // TODO: parse flags
 
-        mode = parse_mode(argv[2], len);
-
-        if (mode < 0) {
-            LOG_ERROR("invalid mode: %s", argv[2]);
+        if (flags < 0) {
+            LOG_ERROR("invalid flags: %s", argv[2]);
+            printf("-1");
             return 1;
         }
     }
 
-    int result = libfs_create(argv[1], (u32)mode);
+    int result = libfs_open(argv[1], (u32)flags);
 
     if (result < 0) {
-        LOG_LIBFS_ERRNO("libfs_create failed");
+        LOG_LIBFS_ERRNO("libfs_open failed");
+        printf("-1");
         return 1;
     }
 
-    LOG_INFO("libfs_create succeeded: %d", result);
+    LOG_INFO("libfs_open succeeded: %d", result);
+    printf("%d", result);
 
     return 0;
 }

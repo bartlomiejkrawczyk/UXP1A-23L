@@ -10,32 +10,22 @@
 #include "types.h"
 
 int main(int argc, char** argv) {
-    if (argc < 2 || argc > 3) {
-        LOG_ERROR("usage: %s <path> [mode]", argv[0]);
+    if (argc != 2) {
+        LOG_ERROR("usage: %s <source> <destination>", argv[0]);
+        printf("-1");
         return 1;
     }
 
-    int mode = 0777;
-
-    if (argc == 3) {
-        usize len = strlen(argv[2]);
-
-        mode = parse_mode(argv[2], len);
-
-        if (mode < 0) {
-            LOG_ERROR("invalid mode: %s", argv[2]);
-            return 1;
-        }
-    }
-
-    int result = libfs_create(argv[1], (u32)mode);
+    int result = libfs_link(argv[1], argv[2]);
 
     if (result < 0) {
-        LOG_LIBFS_ERRNO("libfs_create failed");
+        LOG_LIBFS_ERRNO("libfs_link failed");
+        printf("-1");
         return 1;
     }
 
-    LOG_INFO("libfs_create succeeded: %d", result);
+    LOG_INFO("libfs_link succeeded: %d", result);
+    printf("%d", result);
 
     return 0;
 }

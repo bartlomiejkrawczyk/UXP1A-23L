@@ -10,32 +10,23 @@
 #include "types.h"
 
 int main(int argc, char** argv) {
-    if (argc < 2 || argc > 3) {
-        LOG_ERROR("usage: %s <path> [mode]", argv[0]);
+    if (argc != 3) {
+        LOG_ERROR("usage: %s <file-descriptor> <size>", argv[0]);
         return 1;
     }
 
-    int mode = 0777;
-
-    if (argc == 3) {
-        usize len = strlen(argv[2]);
-
-        mode = parse_mode(argv[2], len);
-
-        if (mode < 0) {
-            LOG_ERROR("invalid mode: %s", argv[2]);
-            return 1;
-        }
-    }
-
-    int result = libfs_create(argv[1], (u32)mode);
+    u32 size = (u32)atoi(argv[2]);
+    u8* buf = malloc(size);
+    int result = libfs_read((fd_type)atoi(argv[1]), buf, size);
 
     if (result < 0) {
-        LOG_LIBFS_ERRNO("libfs_create failed");
+        LOG_LIBFS_ERRNO("libfs_read failed");
         return 1;
     }
 
-    LOG_INFO("libfs_create succeeded: %d", result);
+    LOG_INFO("libfs_read succeeded: %d", result);
+    printf("%s", buf);
+    free(buf);
 
     return 0;
 }
