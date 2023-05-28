@@ -58,7 +58,7 @@ Dowolny system Unix/Linux zgodny z POSIX
 
 # Interpretecja treści zadania
 
-Pliki oraz operacje na plikach będą obsługiwane za pośrednictwem *demona*. Serwis będzie przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/state/libfs`. Biblioteka będzie udostępniała podstawowy interfejs oraz załatwi komunikację z demonem poprzez nazwane kolejki.
+Pliki oraz operacje na plikach będą obsługiwane za pośrednictwem *demona*. Serwis będzie przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/share/libfs`. Biblioteka będzie udostępniała podstawowy interfejs oraz załatwi komunikację z demonem poprzez nazwane kolejki.
 
 ## Opisy funkcji
 <!-- wymaganych oraz dodatkowych -->
