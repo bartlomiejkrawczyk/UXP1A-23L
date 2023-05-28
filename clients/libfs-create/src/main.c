@@ -52,7 +52,7 @@ static int parse_rwx(const char* mode) {
         }
     }
 
-    result >>= 1; // compensate for the last shift
+    result >>= 1;  // compensate for the last shift
 
     return result;
 }
@@ -70,6 +70,7 @@ int parse_mode(const char* mode, usize len) {
 int main(int argc, char** argv) {
     if (argc < 2 || argc > 3) {
         LOG_ERROR("usage: %s <path> [mode]", argv[0]);
+        printf("%d", -1);
         return 1;
     }
 
@@ -82,18 +83,21 @@ int main(int argc, char** argv) {
 
         if (mode < 0) {
             LOG_ERROR("invalid mode: %s", argv[2]);
+            printf("%d", -1);
             return 1;
         }
     }
 
-    int result = libfs_create(argv[1], (u32)mode);
+    fd_type result = libfs_create(argv[1], (u32)mode);
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_create failed");
+        printf("%d", -1);
         return 1;
     }
 
     LOG_INFO("libfs_create succeeded: %d", result);
+    printf("%d", result);
 
-    return 0;
+    return result;
 }
