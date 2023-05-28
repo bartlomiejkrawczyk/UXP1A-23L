@@ -106,7 +106,48 @@ static int request_daemon_response(const libfs_request_t* request, libfs_respons
     return 0;
 }
 
-int libfs_create(const char* path, u32 mode) {
+int libfs_chmode(const char* name, long mode) {
+    libfs_request_chmode_t chmode_request = {
+        .name = (char*)name,
+        .mode = mode,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_chmode_pack(&chmode_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+int libfs_close(fd_type fd) {
+    libfs_request_close_t close_request = {
+        .fd = fd,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_close_pack(&close_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+fd_type libfs_create(const char* path, u32 mode) {
     libfs_request_create_t create_request = {
         .name = (char*)path,
         .mode = mode,
@@ -114,6 +155,201 @@ int libfs_create(const char* path, u32 mode) {
 
     libfs_response_t response;
     libfs_request_t packed_request = libfs_request_create_pack(&create_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    // TODO: do i need to check if the file descriptor has correct size
+    fd_type file_descriptor = response.data;
+    return file_descriptor;
+}
+
+int libfs_link(const char* source, const char* destination) {
+    libfs_request_link_t link_request = {
+        .source = (char*)source,
+        .destination = (char*)destination,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_link_pack(&link_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+fd_type libfs_open(char* name, int flags) {
+    libfs_request_open_t open_request = {
+        .name = (char*)name,
+        .flags = flags,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_open_pack(&open_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    // TODO: do i need to check if the file descriptor has correct size
+    fd_type file_descriptor = response.data;
+    return file_descriptor;
+}
+
+int libfs_read(fd_type fd, char* buf, unsigned int size) {
+    libfs_request_read_t read_request = {
+        .fd = fd,
+        .size = size,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_read_pack(&read_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    memcpy(buf, response.data, response.data_size);
+
+    return 0;
+}
+
+int libfs_rename(char* oldname, char* newname) {
+    libfs_request_rename_t rename_request = {
+        .old_name = (char*)oldname,
+        .new_name = (char*)newname,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_rename_pack(&rename_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+int libfs_seek(fd_type fd, long int offset) {
+    libfs_request_seek_t seek_request = {
+        .fd = fd,
+        .offset = offset,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_seek_pack(&seek_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+int libfs_stat(const char* restrict pathname, struct libfs_stat_struct_t* restrict statbuf) {
+    libfs_request_stat_t stat_request = {
+        .pathname = (char*)pathname,
+        .statbuf = statbuf,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_stat_pack(&stat_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+int libfs_symlink(const char* source, const char* destination) {
+    libfs_request_symlink_t symlink_request = {
+        .source = (char*)source,
+        .destination = (char*)destination,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_symlink_pack(&symlink_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+int libfs_unlink(char* name) {
+    libfs_request_unlink_t unlink_request = {
+        .name = (char*)name,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_unlink_pack(&unlink_request);
+
+    if (request_daemon_response(&packed_request, &response) != 0) {
+        return -1;
+    }
+
+    if (response.status != 0) {
+        libfs_set_errno(response.status);
+        return -1;
+    }
+
+    return 0;
+}
+
+int libfs_write(fd_type fd, char* buf, unsigned int size) {
+    libfs_request_write_t write_request = {
+        .fd = fd,
+        .data = buf,
+        .size = size,
+    };
+
+    libfs_response_t response;
+    libfs_request_t packed_request = libfs_request_write_pack(&write_request);
 
     if (request_daemon_response(&packed_request, &response) != 0) {
         return -1;
