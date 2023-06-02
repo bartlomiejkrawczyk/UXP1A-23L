@@ -10,8 +10,8 @@
 #include "types.h"
 
 int main(int argc, char** argv) {
-    if (argc != 1) {
-        LOG_ERROR("usage: %s <file_descriptr>", argv[0]);
+    if (argc != 2) {
+        LOG_ERROR("usage: %s <file_descriptor>", argv[0]);
         printf("-1");
         return 1;
     }
