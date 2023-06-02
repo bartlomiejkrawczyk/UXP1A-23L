@@ -1,3 +1,4 @@
+#define __USE_XOPEN_EXTENDED
 #include "dispatchers.h"
 
 #include <fcntl.h>
@@ -78,7 +79,7 @@ void chmode_handler(pid_t sender, const REQUEST_TYPE(chmode) * request) {
     LOG_INFO("path: %s", path_buf);
 
     u32 prev_umask = umask(0);
-    int result = chmode(path_buf, request->mode);
+    int result = chmod(path_buf, request->mode);
     umask(prev_umask);
 
     if (result < 0) {
@@ -238,7 +239,7 @@ void open_handler(pid_t sender, const REQUEST_TYPE(open) * request) {
 
     LOG_INFO("path: %s", path_buf);
 
-    fd_type fd = open(path_buf, request->flags);
+    fd_type fd = open(path_buf, (int)request->flags);
 
     if (fd < 0) {
         LOG_ERRNO("could not open file");
@@ -268,7 +269,9 @@ void read_handler(pid_t sender, const REQUEST_TYPE(read) * request) {
     LOG_INFO("fd: %d, size: %ld", request->fd, request->size);
 
     u8* data = malloc(sizeof(request->size));
-    int data_size = read(request->fd, data, request->size);
+    ssize_t data_size = read(request->fd, data, request->size);
+
+    // TODO: does not work
 
     if (data_size < 0) {
         LOG_ERRNO("could not read from file descriptor");
@@ -284,7 +287,7 @@ void read_handler(pid_t sender, const REQUEST_TYPE(read) * request) {
 
     libfs_response_t response = {
         .status = 0,
-        .data_size = data_size,
+        .data_size = (size_t)data_size,
         .data = data,
     };
 
@@ -302,8 +305,8 @@ void rename_handler(pid_t sender, const REQUEST_TYPE(rename) * request) {
     memcpy(old_name_buf, path_buf, 256);
     memcpy(new_name_buf, path_buf, 256);
 
-    strncat(old_name_buf, request->source, 256 - strlen(old_name_buf));
-    strncat(new_name_buf, request->destination, 256 - strlen(new_name_buf));
+    strncat(old_name_buf, request->old_name, 256 - strlen(old_name_buf));
+    strncat(new_name_buf, request->new_name, 256 - strlen(new_name_buf));
 
     int result = rename(old_name_buf, new_name_buf);
 
@@ -334,7 +337,7 @@ void rename_handler(pid_t sender, const REQUEST_TYPE(rename) * request) {
 void seek_handler(pid_t sender, const REQUEST_TYPE(seek) * request) {
     LOG_INFO("fd: %d, offset: %ld", request->fd, request->offset);
 
-    int result = lseek(request->fd, request->offset, SEEK_CUR);
+    ssize_t result = lseek(request->fd, request->offset, SEEK_CUR);
 
     if (result < 0) {
         LOG_ERRNO("could not reposition file offset of the open file descriptor");
@@ -348,12 +351,12 @@ void seek_handler(pid_t sender, const REQUEST_TYPE(seek) * request) {
         return;
     }
 
-    u8* data = malloc(sizeof(int));
-    memcpy(data, (void*)&result, sizeof(int));
+    u8* data = malloc(sizeof(ssize_t));
+    memcpy(data, (void*)&result, sizeof(ssize_t));
 
     libfs_response_t response = {
         .status = 0,
-        .data_size = sizeof(int),
+        .data_size = sizeof(ssize_t),
         .data = data,
     };
 
@@ -361,6 +364,7 @@ void seek_handler(pid_t sender, const REQUEST_TYPE(seek) * request) {
 }
 
 void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
+    (void)sender;  // unused
     LOG_INFO("path_name: %s", request->pathname);
 
     char path_buf[256];
@@ -370,11 +374,14 @@ void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
 
     LOG_INFO("path: %s", path_buf);
 
-    struct stat stat;
-    int result = lstat(path_buf, &stat);
+    // struct stat stat;
+    // int result = fstat(&path_buf, &stat);
+
+    // TODO: finish me!
 }
 
 void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
+    (void)sender;  // unused
     LOG_INFO("source: %s, destination: %s", request->source, request->destination);
 
     char path_buf[256];
@@ -390,7 +397,8 @@ void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
 
     LOG_INFO("path: %s", path_buf);
 
-    int result = symlink(source_buf, destination_buf);
+    // FIXME: change me to symlink!!!
+    int result = link(source_buf, destination_buf);
 
     if (result < 0) {
         LOG_ERRNO("could not create a soft link to a file");
@@ -455,7 +463,7 @@ void unlink_handler(pid_t sender, const REQUEST_TYPE(unlink) * request) {
 void write_handler(pid_t sender, const REQUEST_TYPE(write) * request) {
     LOG_INFO("fd: %d, size: %ld", request->fd, request->size);
 
-    int result = write(request->fd, request->data, request->size);
+    ssize_t result = write(request->fd, request->data, request->size);
 
     if (result < 0) {
         LOG_ERRNO("could not write to a file");
@@ -469,12 +477,12 @@ void write_handler(pid_t sender, const REQUEST_TYPE(write) * request) {
         return;
     }
 
-    u8* data = malloc(sizeof(int));
-    memcpy(data, (void*)&result, sizeof(int));
+    u8* data = malloc(sizeof(ssize_t));
+    memcpy(data, (void*)&result, sizeof(ssize_t));
 
     libfs_response_t response = {
         .status = 0,
-        .data_size = sizeof(int),
+        .data_size = sizeof(ssize_t),
         .data = data,
     };
 
