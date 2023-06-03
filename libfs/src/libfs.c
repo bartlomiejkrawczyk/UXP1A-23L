@@ -234,7 +234,7 @@ int libfs_read(fd_type fd, u8* buf, unsigned int size) {
 
     memcpy(buf, response.data, response.data_size);
 
-    return 0;
+    return (int)response.data_size;
 }
 
 int libfs_rename(char* oldname, char* newname) {
@@ -276,7 +276,7 @@ int libfs_seek(fd_type fd, long int offset) {
         return -1;
     }
 
-    return 0;
+    return (int)(*response.data);
 }
 
 int libfs_stat(const char* restrict pathname, libfs_stat_struct_t* restrict statbuf) {
