@@ -12,7 +12,6 @@
 int main(int argc, char** argv) {
     if (argc != 3) {
         LOG_ERROR("usage: %s <file-descriptor> <content>", argv[0]);
-        printf("-1");
         return 1;
     }
 
@@ -21,7 +20,6 @@ int main(int argc, char** argv) {
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_write failed");
-        printf("-1");
         return 1;
     }
 

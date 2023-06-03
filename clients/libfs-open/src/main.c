@@ -23,7 +23,6 @@ int main(int argc, char** argv) {
 
         if (flags < 0) {
             LOG_ERROR("invalid flags: %s", argv[2]);
-            printf("-1");
             return 1;
         }
     }
@@ -32,7 +31,6 @@ int main(int argc, char** argv) {
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_open failed");
-        printf("-1");
         return 1;
     }
 

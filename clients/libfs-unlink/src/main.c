@@ -20,12 +20,10 @@ int main(int argc, char** argv) {
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_unlink failed");
-        printf("-1");
         return 1;
     }
 
     LOG_INFO("libfs_unlink succeeded: %d", result);
-    printf("%d", result);
 
     return 0;
 }

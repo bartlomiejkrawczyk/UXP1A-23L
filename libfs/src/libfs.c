@@ -360,7 +360,7 @@ int libfs_write(fd_type fd, u8* buf, unsigned int size) {
         return -1;
     }
 
-    return 0;
+    return (int)(*response.data);
 }
 
 static int parse_octal(const char* mode) {

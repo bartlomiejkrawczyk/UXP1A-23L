@@ -12,7 +12,6 @@
 int main(int argc, char** argv) {
     if (argc != 2) {
         LOG_ERROR("usage: %s <file_descriptor>", argv[0]);
-        printf("-1");
         return 1;
     }
 
@@ -20,12 +19,10 @@ int main(int argc, char** argv) {
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_close failed");
-        printf("-1");
         return 1;
     }
 
     LOG_INFO("libfs_close succeeded: %d", result);
-    printf("%d", result);
 
     return 0;
 }
