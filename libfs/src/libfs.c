@@ -258,7 +258,7 @@ int libfs_rename(char* oldname, char* newname) {
     return 0;
 }
 
-int libfs_seek(fd_type fd, long int offset) {
+ssize_t libfs_seek(fd_type fd, ssize_t offset) {
     libfs_request_seek_t seek_request = {
         .fd = fd,
         .offset = offset,
@@ -276,7 +276,7 @@ int libfs_seek(fd_type fd, long int offset) {
         return -1;
     }
 
-    return (int)(*(int*)(response.data));
+    return (ssize_t)(*(ssize_t*)(response.data));
 }
 
 int libfs_stat(const char* restrict pathname, libfs_stat_struct_t* restrict statbuf) {
@@ -341,7 +341,7 @@ int libfs_unlink(char* name) {
     return 0;
 }
 
-int libfs_write(fd_type fd, u8* buf, unsigned int size) {
+ssize_t libfs_write(fd_type fd, u8* buf, unsigned int size) {
     libfs_request_write_t write_request = {
         .fd = fd,
         .data = buf,
@@ -360,7 +360,7 @@ int libfs_write(fd_type fd, u8* buf, unsigned int size) {
         return -1;
     }
 
-    return (int)(*(int*)(response.data));
+    return (ssize_t)(*(ssize_t*)(response.data));
 }
 
 static int parse_octal(const char* mode) {

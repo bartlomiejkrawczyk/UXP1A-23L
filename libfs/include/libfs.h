@@ -17,7 +17,7 @@ int libfs_read(fd_type fd, u8 *buf, unsigned int size);
 
 int libfs_rename(char *oldname, char *newname);
 
-int libfs_seek(fd_type fd, long int offset);
+ssize_t libfs_seek(fd_type fd, ssize_t offset);
 
 int libfs_stat(const char *restrict pathname, libfs_stat_struct_t *restrict statbuf);
 
@@ -25,6 +25,6 @@ int libfs_symlink(const char *source, const char *destination);
 
 int libfs_unlink(char *name);
 
-int libfs_write(fd_type fd, u8 *buf, unsigned int size);
+ssize_t libfs_write(fd_type fd, u8 *buf, unsigned int size);
 
 int parse_mode(const char *mode, usize len);

@@ -21,14 +21,14 @@ int main(int argc, char** argv) {
         offset = atol(argv[2]);
     }
 
-    int result = libfs_seek((fd_type)atoi(argv[1]), offset);
+    ssize_t result = libfs_seek((fd_type)atoi(argv[1]), offset);
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_seek failed");
         return 1;
     }
 
-    LOG_INFO("libfs_seek succeeded: %d", result);
+    LOG_INFO("libfs_seek succeeded: %ld", result);
 
     return 0;
 }

@@ -271,8 +271,6 @@ void read_handler(pid_t sender, const REQUEST_TYPE(read) * request) {
     u8* data = malloc(sizeof(request->size));
     ssize_t data_size = read(request->fd, data, request->size);
 
-    // TODO: does not work
-
     if (data_size < 0) {
         LOG_ERRNO("could not read from file descriptor");
         libfs_response_t response = {
