@@ -25,7 +25,6 @@ int main(int argc, char** argv) {
 
         if (mode < 0) {
             LOG_ERROR("invalid mode: %s", argv[2]);
-            printf("%d", -1);
             return 1;
         }
     }
@@ -34,7 +33,6 @@ int main(int argc, char** argv) {
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_create failed");
-        printf("%d", -1);
         return 1;
     }
 

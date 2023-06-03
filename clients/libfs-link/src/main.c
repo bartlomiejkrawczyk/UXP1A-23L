@@ -10,7 +10,7 @@
 #include "types.h"
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
+    if (argc != 3) {
         LOG_ERROR("usage: %s <source> <destination>", argv[0]);
         printf("-1");
         return 1;
@@ -20,12 +20,10 @@ int main(int argc, char** argv) {
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_link failed");
-        printf("-1");
         return 1;
     }
 
     LOG_INFO("libfs_link succeeded: %d", result);
-    printf("%d", result);
 
     return 0;
 }

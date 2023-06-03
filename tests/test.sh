@@ -7,15 +7,19 @@ ERROR_COLOR='\033[31;1m'
 MESSAGE_COLOR='\033[94;1m'
 NC='\033[0m'
 
+
 usage() {
     echo "Usage: $0 -d <directory> -t <test-pattern> [-n (no cleanup)]"
     exit 1
 }
 
 clean_up_libfs() {
+    killall -- libfs-daemon > /dev/null  2>&1 
     rm -rf "$HOME/.local/share/libfs"
+    libfs-daemon > daemon.log 2>&1  &  
 }
 
+PATH=$PATH:../binaries
 DIRECTORY="."
 TEST='*'
 CLEANUP=1
