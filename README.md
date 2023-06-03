@@ -58,7 +58,7 @@ Dowolny system Unix/Linux zgodny z POSIX
 
 # Interpretecja treści zadania
 
-Pliki oraz operacje na plikach będą obsługiwane za pośrednictwem *demona*. Serwis będzie przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/state/libfs`. Biblioteka będzie udostępniała podstawowy interfejs oraz załatwi komunikację z demonem poprzez nazwane kolejki.
+Pliki oraz operacje na plikach będą obsługiwane za pośrednictwem *demona*. Serwis będzie przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/share/libfs`. Biblioteka będzie udostępniała podstawowy interfejs oraz załatwi komunikację z demonem poprzez nazwane kolejki.
 
 ## Opisy funkcji
 <!-- wymaganych oraz dodatkowych -->
@@ -268,6 +268,9 @@ flowchart LR
         libfs-write
         libfs-seek
         libfs-close
+        libfs-stat
+        libfs-link
+        libfs-symlink
     end
 
     libfs-core ==> ld[libfs-daemon]
@@ -283,6 +286,9 @@ flowchart LR
     libfs ==> libfs-write
     libfs ==> libfs-seek
     libfs ==> libfs-close
+    libfs ==> libfs-stat
+    libfs ==> libfs-link
+    libfs ==> libfs-symlink
 
     libfs-create <-.-> ld
     libfs-chmode <-.-> ld
@@ -293,6 +299,9 @@ flowchart LR
     libfs-write <-.-> ld
     libfs-seek <-.-> ld
     libfs-close <-.-> ld
+    libfs-stat <-.-> ld
+    libfs-link <-.-> ld
+    libfs-symlink <-.-> ld
 ```
 
 Rozwiązanie podzielmy na dwie osobne biblioteki `libfs-core.a` oraz `libfs.a`.
