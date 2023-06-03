@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    int flags = 0;
+    int flags = O_RDWR;
 
     if (argc == 3) {
         // TODO: parse flags
