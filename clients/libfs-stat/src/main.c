@@ -10,7 +10,7 @@
 #include "types.h"
 
 int main(int argc, char** argv) {
-    if (argc != 1) {
+    if (argc != 2) {
         LOG_ERROR("usage: %s <path>", argv[0]);
         return 1;
     }
