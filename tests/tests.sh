@@ -1,12 +1,14 @@
 set -euox
 
-fdw=$(../clients/libfs-create/libfs-create hello.txt)
+PATH=$PATH:../binaries
 
-../clients/libfs-write/libfs-write $fdw "Hello"
-../clients/libfs-close/libfs-close $fdw
+fdw=$(libfs-create hello.txt)
 
-fdr=$(../clients/libfs-open/libfs-open -r hello.txt)
-content=$(../clients/libfs-read/libfs-read $fdr)
-../clients/libfs-close/libfs-close $fdr
+libfs-write $fdw "Hello"
+libfs-close $fdw
+
+fdr=$(libfs-open hello.txt)
+content=$(libfs-read $fdr)
+libfs-close $fdr
 
 echo $content
