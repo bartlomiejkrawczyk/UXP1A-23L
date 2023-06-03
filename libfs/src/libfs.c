@@ -276,7 +276,7 @@ int libfs_seek(fd_type fd, long int offset) {
         return -1;
     }
 
-    return (int)(*response.data);
+    return (int)(*(int*)(response.data));
 }
 
 int libfs_stat(const char* restrict pathname, libfs_stat_struct_t* restrict statbuf) {
@@ -360,7 +360,7 @@ int libfs_write(fd_type fd, u8* buf, unsigned int size) {
         return -1;
     }
 
-    return (int)(*response.data);
+    return (int)(*(int*)(response.data));
 }
 
 static int parse_octal(const char* mode) {
