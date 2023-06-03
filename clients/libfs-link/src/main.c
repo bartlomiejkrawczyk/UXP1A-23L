@@ -10,7 +10,7 @@
 #include "types.h"
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
+    if (argc != 3) {
         LOG_ERROR("usage: %s <source> <destination>", argv[0]);
         printf("-1");
         return 1;
