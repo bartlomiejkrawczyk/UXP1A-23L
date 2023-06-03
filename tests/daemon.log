@@ -1,0 +1,18 @@
+[32;1m[INFO] [0mstarting daemon
+[32;1m[INFO] [0mpid: 30862
+[32;1m[INFO] [0minstalled signal handlers
+[32;1m[INFO] [0mmain pipe path: /home/bartlomiejkrawczyk/.local/share/libfs/pipes/main_pipe
+[32;1m[INFO] [0mcreated pipe: /home/bartlomiejkrawczyk/.local/share/libfs/pipes/main_pipe
+[32;1m[INFO] [0mopened pipe: /home/bartlomiejkrawczyk/.local/share/libfs/pipes/main_pipe
+[32;1m[INFO] [0mstarting dispatcher loop
+[32;1m[INFO] [0mreceived request kind: 0
+[32;1m[INFO] [0mrequest coming from pid: 30871
+[32;1m[INFO] [0mtotal request buffer size: 30
+[32;1m[INFO] [0mread 14 bytes
+[32;1m[INFO] [0mdispatching request kind: 0
+[32;1m[INFO] [0mdispatcher create
+[32;1m[INFO] [0mmode: 777, name: hello.txt
+[32;1m[INFO] [0mpath: /home/bartlomiejkrawczyk/.local/share/libfs/files/hello.txt
+[32;1m[INFO] [0mopening pipe to sender: /home/bartlomiejkrawczyk/.local/share/libfs/pipes/30871
+[32;1m[INFO] [0mstatus: 0, data_size: 4
+[33m[WARN] [0mpipe closed, trying to recover...
