@@ -279,10 +279,9 @@ ssize_t libfs_seek(fd_type fd, ssize_t offset) {
     return (ssize_t)(*(ssize_t*)(response.data));
 }
 
-int libfs_stat(const char* restrict pathname, libfs_stat_struct_t* restrict statbuf) {
+int libfs_stat(int fd, libfs_stat_struct_t* restrict statbuf) {
     libfs_request_stat_t stat_request = {
-        .pathname = (char*)pathname,
-        .statbuf = statbuf,
+        .fd = fd,
     };
 
     libfs_response_t response;
@@ -296,6 +295,8 @@ int libfs_stat(const char* restrict pathname, libfs_stat_struct_t* restrict stat
         libfs_set_errno(response.status);
         return -1;
     }
+
+    memcpy(statbuf, response.data, response.data_size);
 
     return 0;
 }

@@ -254,27 +254,19 @@ libfs_request_close_t libfs_request_close_unpack(const libfs_request_t* request)
 }
 
 libfs_request_t libfs_request_stat_pack(const libfs_request_stat_t* request_stat) {
-    usize name_len = strlen(request_stat->pathname) + 1;
-
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_STAT;
     request.sender = getpid();
-    request.data_size = name_len + sizeof(libfs_stat_struct_t);
+    request.data_size = sizeof(fd_type);
     request.data = malloc(request.data_size);
 
-    memcpy(request.data, request_stat->pathname, name_len);
-    memcpy(request.data + name_len, request_stat->statbuf, sizeof(libfs_stat_struct_t));
+    memcpy(request.data, &request_stat->fd, sizeof(fd_type));
 
     return request;
 }
 libfs_request_stat_t libfs_request_stat_unpack(const libfs_request_t* request) {
     libfs_request_stat_t request_stat;
-    // No deep copy, deserialized
-    // request is a "view" of the
-    // serialized data
-    request_stat.pathname = (char*)request->data;
-    usize name_len = strlen(request_stat.pathname) + 1;
-    request_stat.statbuf = (libfs_stat_struct_t*)(request->data + name_len);
+    memcpy(&request_stat.fd, request->data, sizeof(fd_type));
     return request_stat;
 }
 

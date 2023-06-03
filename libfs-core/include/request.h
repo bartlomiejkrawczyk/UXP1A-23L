@@ -136,8 +136,7 @@ typedef struct libfs_stat_struct {
 } libfs_stat_struct_t;
 
 typedef struct libfs_request_stat {
-    char* pathname;
-    libfs_stat_struct_t* statbuf;
+    fd_type fd;
 } libfs_request_stat_t;
 
 libfs_request_t libfs_request_stat_pack(const libfs_request_stat_t* request_stat);

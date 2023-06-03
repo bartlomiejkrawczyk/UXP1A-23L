@@ -19,7 +19,7 @@ int libfs_rename(char *oldname, char *newname);
 
 ssize_t libfs_seek(fd_type fd, ssize_t offset);
 
-int libfs_stat(const char *restrict pathname, libfs_stat_struct_t *restrict statbuf);
+int libfs_stat(int fd, libfs_stat_struct_t *restrict statbuf);
 
 int libfs_symlink(const char *source, const char *destination);
 

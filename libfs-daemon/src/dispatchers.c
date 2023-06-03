@@ -362,20 +362,57 @@ void seek_handler(pid_t sender, const REQUEST_TYPE(seek) * request) {
 }
 
 void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
-    (void)sender;  // unused
-    LOG_INFO("path_name: %s", request->pathname);
+    LOG_INFO("fd: %d", request->fd);
 
-    char path_buf[256];
-    libfs_get_files_path(path_buf, 256);
+    struct stat file_stat;
+    int result = fstat(request->fd, &file_stat);
 
-    strncat(path_buf, request->pathname, 256 - strlen(path_buf));
+    if (result < 0) {
+        LOG_ERRNO("could not create a soft link to a file");
+        libfs_response_t response = {
+            .status = errno,
+            .data_size = 0,
+            .data = NULL,
+        };
 
-    LOG_INFO("path: %s", path_buf);
+        send_response(sender, &response);
+        return;
+    }
 
-    // struct stat stat;
-    // int result = fstat(&path_buf, &stat);
+    libfs_stat_struct_t file_structure = {
+        .st_ino = file_stat.st_ino,
+        .st_mode = file_stat.st_mode,
+        .st_nlink = file_stat.st_nlink,
+        .st_size = file_stat.st_size,
+        .st_blksize = file_stat.st_blksize,
+        .st_blocks = file_stat.st_blocks,
+        .st_atim =
+            {
+                .tv_sec = file_stat.st_atime,
+                .tv_nsec = (long int)file_stat.st_atimensec,
+            },
+        .st_mtim =
+            {
+                .tv_sec = file_stat.st_mtime,
+                .tv_nsec = (long int)file_stat.st_mtimensec,
+            },
+        .st_ctim =
+            {
+                .tv_sec = file_stat.st_ctime,
+                .tv_nsec = (long int)file_stat.st_ctimensec,
+            },
+    };
 
-    // TODO: finish me!
+    u8* data = malloc(sizeof(libfs_stat_struct_t));
+    memcpy(data, (void*)&file_structure, sizeof(libfs_stat_struct_t));
+
+    libfs_response_t response = {
+        .status = 0,
+        .data_size = sizeof(libfs_stat_struct_t),
+        .data = data,
+    };
+
+    send_response(sender, &response);
 }
 
 void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
