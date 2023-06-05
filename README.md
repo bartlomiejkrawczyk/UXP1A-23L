@@ -1,4 +1,5 @@
 # Temat zadania
+
 Napisać bibliotekę implementującą prosty system plików z operacjami zdefiniowanymi niżej.
 
 Wariant: **W11 + W22**
@@ -52,13 +53,14 @@ Testy wymagają napisania programu lub programów (i ewentualnie skryptów) pokr
 Testy mogą zawierać prosty tekstowy interpreter pozwalający na uruchamianie poszczególnych funkcji w trybie konwersacyjnym. Dozwolone jest też napisanie szeregu prostych programów testowych, w takim przypadku zalecane jest stworzenie skryptów parametryzujących różne wywołania takich programów.
 
 ### Miejsce realizacji:
-Dowolny system Unix/Linux zgodny z POSIX
 
-<!-- TODO: -->
+Dowolny system Unix/Linux zgodny z POSIX
 
 # Interpretecja treści zadania
 
-Pliki oraz operacje na plikach będą obsługiwane za pośrednictwem *demona*. Serwis będzie przechowywać pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/share/libfs`. Biblioteka będzie udostępniała podstawowy interfejs oraz załatwi komunikację z demonem poprzez nazwane kolejki.
+<!-- Interpretację treści zadania (tj. doprecyzowanie treści), w tym definicje i opisy wymaganych i dodatkowych funkcji. -->
+
+Pliki oraz operacje na plikach są obsługiwane za pośrednictwem *demona*. Serwis przechowywuje pliki w określonej z góry lokalizacji na dysku. Jest ona unikalna dla użytkownika, tworzona w jego katalogu domowym w ukrytym katalogu `$HOME/.local/share/libfs`. Biblioteka udostępnia podstawowy interfejs oraz realizuje komunikację z demonem poprzez nazwane kolejki.
 
 ## Opisy funkcji
 <!-- wymaganych oraz dodatkowych -->
@@ -121,7 +123,7 @@ int libfs_close(fd_type fd);
 
 `struct libfs_stat_t` jest okrojoną wersją `struct stat` ze standardów. Usunięte są pola nam niepotrzebne, np. device ID lub user ID bądź group ID. Zakładamy że nasz system plików jest płaski, tzn. bez podkatalogów i istnieje w predefiniowanym miejscu na dysku. Jako że daemon pracuje z uprawnieniami użytkownika wykonującego do niego zapytania, pliki użytkownika biblioteki muszą znajdować się w miejscu w pełni dostępnym dla daemona, co ogranicza nas do `$HOME` użytkownika. Dane te byłyby więc stałe między plikami.
 
-Nie planujemy powielać informacji o plikach w pamięci demona - `libfs_stat` będzie mapowała istniejącą informację o pliku z systemu plików na naszą strukturę zdefiniowaną w bibliotece.
+Nie powielamy informacji o plikach w pamięci demona - `libfs_stat` jedynie mapuje istniejącą informację o pliku z systemu plików na naszą strukturę zdefiniowaną w bibliotece.
 
 ```c
 struct libfs_stat_t {
@@ -137,8 +139,7 @@ struct libfs_stat_t {
    struct timespec st_ctim;  /* Time of last status change */
 };
 
-int libfs_stat(const char *restrict pathname,
-               struct libfs_stat_t *restrict statbuf);
+int libfs_stat(int fd, struct stat *statbuf);
 ```
 
 **Dodanie nowej nazwy do isniejącego pliku**
@@ -155,18 +156,41 @@ int libfs_symlink(const char* source, const char* destination);
 
 # Opis funkcjonalny "Black-Box"
 <!-- Krótki opis funkcjonalny – “black-box”, najlepiej w punktach. -->
+<!-- Pełen opis funkcjonalny “black-box”. -->
 
-- Udostępniamy prosty system plików w jednym katalogu bez podkatalogów.
-- Obsługuje tylko pliki zwykłe, dowiązania twarde i symboliczne.
-- Dostępne operacje to: tworzenie, zmiana trybu, zmiana nazwy, usuwanie, otwieranie, odczyt i zapis danych, przesunięcie wskaznika pozycji, zamknięcie pliku, pobranie statusu, dodanie twardych oraz symbolicznych dowiązań.
-- Funkcje zwracają kod powrotu i ustawiają zmienną libfs_errno, która informuje o błędach.
-- Obsługa uprawnień jest zgodna z mechanizmami systemowymi, systemy plików nie są dzielone między użytkownikami.
+Nasza usługa udostępnia prosty system plików, który składa się z jednego katalogu bez możliwości tworzenia podkatalogów. W ramach tego systemu plików obsługujemy trzy rodzaje plików: pliki zwykłe, twarde dowiązania oraz symboliczne dowiązania.
+
+Dostępne operacje, które można wykonać na plikach w naszym systemie plików, obejmują:
+
+1. Tworzenie pliku: Użytkownik może utworzyć nowy plik, podając jego nazwę i określając jego tryb (uprawnienia).
+
+2. Zmiana trybu: Umożliwiamy zmianę uprawnień pliku. Użytkownik może określić nowe uprawnienia, które zostaną przypisane do danego pliku.
+
+3. Zmiana nazwy pliku: Użytkownik może zmienić nazwę istniejącego pliku na inną nazwę.
+
+4. Usuwanie pliku: Pozwalamy na usunięcie istniejącego pliku. Po wykonaniu tej operacji plik zostanie trwale usunięty z systemu plików.
+
+5. Otwieranie pliku: Użytkownik może otworzyć istniejący plik, aby przeprowadzić operacje odczytu lub zapisu na jego zawartości.
+
+6. Odczyt i zapis danych: Użytkownik ma możliwość odczytu i zapisu danych wewnątrz otwartego pliku. Może przeglądać jego zawartość lub zmieniać ją według potrzeb.
+
+7. Przesunięcie wskaznika pozycji: Pozwalamy na przesunięcie wskaznika pozycji wewnątrz otwartego pliku. Użytkownik może przesuwać się do określonej pozycji w pliku, aby odczytać lub zapisać dane w wybranym miejscu.
+
+8. Zamknięcie pliku: Po zakończeniu operacji użytkownik może zamknąć plik, zwalniając zasoby systemowe z nim związane.
+
+9. Pobranie statusu: Użytkownik może pobrać informacje o pliku, takie jak rozmiar, datę ostatniej modyfikacji itp.
+
+10. Dodanie twardych i symbolicznych dowiązań: Pozwalamy na utworzenie twardych i symbolicznych dowiązań do istniejących plików. Twarde dowiązania to twarde odnośniki do tego samego pliku, które zachowują się jak niezależne kopie. Symboliczne dowiązania są odnośnikami do innego pliku lub katalogu.
+
+Wszystkie powyższe funkcje zwracają kod powrotu, który informuje o sukcesie lub niepowodzeniu operacji. Dodatkowo, w przypadku wystąpienia błędu, ustawiana jest zmienna libfs_errno, która zawiera informacje o konkretnym błędzie.
+
+W naszym systemie plików obsługa uprawnień jest zgodna z mechanizmami systemowymi. Oznacza to, że każdy plik ma określone uprawnienia, które kontrolują dostęp do niego. Systemy plików nie są dzielone między użytkownikami, co oznacza, że każdy użytkownik ma dostęp tylko do swoich plików i nie może bezpośrednio ingerować w pliki innych użytkowników.
 
 # Opis rozwiązania
 
 <!-- Opis i analizę poprawności stosowanych: struktur danych, metod komunikacja, metod synchronizacji, moduły wraz z przepływem sterowania i danych między nimi. -->
 
-<!-- Podział na moduły i strukturę komunikacji między nimi (silnie wskazany rysunek). -->
+<!-- TODO: Podział na moduły i strukturę komunikacji między nimi (silnie wskazany rysunek). -->
 
 ## Struktury danych
 
@@ -212,6 +236,10 @@ typedef struct libfs_response {
 } libfs_response_t;
 ```
 
+TODO: Format tego tego co wysyłamy jest specjalnie serializowany, tak żeby status rozmiar i dane były obok siebie.
+
+W czasie deserializacji struktur oszczędzamy pamięć dzięki mapowaniu wskaźników na struktury występujące w obiekcie pozyskanym z kolejki. TODO
+
 ## Metody Komunikacji i Synchronizacji
 <!-- Koncepcja realizacji współbieżności. -->
 
@@ -224,7 +252,6 @@ flowchart TB
 
     C1[Client 1]
 
-
     C2[Client 2]
 
     C1 --> FM
@@ -235,7 +262,7 @@ flowchart TB
 
 ```
 
-Demon blokuje się na kolejce, czeka, aż coś zostanie w niej umieszczone. W momencie gdy coś pojawi się w kolejce, demon wczytuje pełną strukturę. Następnie przetwarza odczytaną strukturę na odpowiadającą otrzymanemu typowi. Następuje obsługa requestu - demon wykonuje odpowiednie przetworzenia. Na koniec na podstawie otrzymanej w requescie wartości pid_t sendera wysyła odpowiedź do odpowiedniej klienckiej kolejki. Proces ten jest powtarzany.
+Demon blokuje się na kolejce, czeka, aż coś zostanie w niej umieszczone. W momencie gdy coś pojawi się w kolejce, demon wczytuje pełną strukturę. Następnie przetwarza odczytaną strukturę na odpowiadającą otrzymanemu typowi. Następuje obsługa requestu - demon wykonuje odpowiednie przetworzenia. Na koniec na podstawie otrzymanej w requeście wartości pid_t sendera wysyła odpowiedź do odpowiedniej klienckiej kolejki. Proces ten jest powtarzany.
 
 Komunikacja w dwie strony dobywa się poprzez przesłanie struktur:
 
@@ -250,6 +277,7 @@ Klienckie funkcje biblioteczne będą odpowiedzialne, za utworzenie własnych ko
 
 Synchronizacja na poziomie kolejek klienckich nie jest potrzebna, ponieważ tylko jeden proces zapisuje do kolejki i jeden odczytuje. Natomiast w przypadku kolejki demona, musimy zapewnić synchronizację zapisów, do tego wykorzystamy funkcję `flock()`, dzięki której jesteśmy w stanie zablokować procesy chcące pisać do kolejki w tym samym czasie. Kolejne procesy, które będą chciały zacząć pisać zostaną zablokowane na tej funkcji do czasu zwolnienia blokady.
 
+<!-- TODO: opis dwóch piszących procesów - są kolejkowane -->
 ## Moduły
 
 ```mermaid
@@ -304,39 +332,165 @@ flowchart LR
     libfs-symlink <-.-> ld
 ```
 
-Rozwiązanie podzielmy na dwie osobne biblioteki `libfs-core.a` oraz `libfs.a`.
+Rozwiązanie podzieliliśmy na dwie osobne biblioteki `libfs-core.a` oraz `libfs.a`.
 
-W bibliotece `libfs-core.a` zawrzemy funkcjonalność dzieloną przez demona oraz programy klienckie.
+W bibliotece `libfs-core.a` zawarliśmy funkcjonalność dzieloną przez demona oraz programy klienckie.
 
-Metody, które nie są wymagane przez demona, ale za to są potrzebne do działania programów klienckich zostaną umieszczone w bibliotece `libfs.a`.
+Metody, które nie są wymagane przez demona, ale za to są potrzebne do działania programów klienckich zostały umieszczone w bibliotece `libfs.a`.
 
-Biblioteka `libfs-core.a` będzie zawierała struktury `request` oraz `response`, a także dedykowane metody do serializacji i deserializacji.
+Biblioteka `libfs-core.a` zawiera struktury `request` oraz `response`, a także dedykowane metody do serializacji i deserializacji.
 
-Biblioteka `libfs.a` będzie zawierała obsługę odpowiedzi, a także obsługę wartości `errno`.
+Biblioteka `libfs.a` zawiera obsługę odpowiedzi, a także obsługę wartości `errno`.
 
-Obsługa zapytań `request` zostanie zaimplementowania wewnątrz programu demona, dlatego też nie jest wymagane, aby znalazła się ona w oddzielnej bibliotece.
+Obsługa zapytań `request` została zaimplementowana wewnątrz programu demona, nie ma potrzeby implementowania jej w oddzielnych bibliotekach.
+
+
+<!-- TODO: Opis najważniejszych rozwiązań funkcjonalnych wraz z uzasadnieniem (opis protokołów, struktur danych, kluczowych funkcji, itp.) -->
+
+<!-- TODO:  Szczegółowy opis interfejsu użytkownika. -->
+
+<!-- TODO: Postać wszystkich plików konfiguracyjnych, logów, itp. -->
+
+# Interfejs użytkownika
+
+- programy klienckie
+
+
+**libfs-create**
+```bash
+$ libfs-create
+[ERROR] usage: libfs-create <path> [mode]
+$ libfs-create hello.txt
+[INFO] libfs_create succeeded: 5
+$ libfs-create world.txt 777
+[INFO] libfs_create succeeded: 7
+$ libfs-create my.txt rwxrw-rw-
+[INFO] libfs_create succeeded: 9
+```
+
+**libfs-chmode**
+```bash
+$ libfs-chmode
+[ERROR] usage: libfs-chmode <path> [mode]
+$ libfs-chmode my.txt 776
+[INFO] libfs_chmode succeeded: 0
+$ libfs-chmode my.txt    
+[INFO] libfs_chmode succeeded: 0
+```
+
+**libfs-open**
+```bash
+$ libfs-open          
+[ERROR] usage: ./libfs-open <path> [flags]
+$ libfs-open hello.txt
+[INFO] libfs_open succeeded: 10
+$ libfs-open hello.txt -r 
+[INFO] libfs_open succeeded: 52
+$ libfs-open hello.txt -w
+[INFO] libfs_open succeeded: 54
+$ libfs-open hello.txt -rw
+[INFO] libfs_open succeeded: 60
+```
+
+**libfs-close**
+```bash
+$ libfs-close 
+[ERROR] usage: libfs-close <file_descriptor>
+$ libfs-close 7
+[INFO] libfs_close succeeded: 0
+```
+
+**libfs-write**
+```bash
+$ libfs-write 
+[ERROR] usage: libfs-write <file-descriptor> <content>
+$ libfs-write 5 "Hello, World"
+[INFO] libfs_write succeeded: 13
+```
+
+**libfs-link**
+```bash
+$ libfs-link 
+[ERROR] usage: libfs-link <source> <destination>
+$ libfs-link hello.txt hello-2.txt
+[INFO] libfs_link succeeded: 0
+```
+
+**libfs-symlink**
+```bash
+$ libfs-symlink 
+[ERROR] usage: libfs-symlink <source> <destination>
+$ libfs-symlink hello.txt hello-3.txt
+[INFO] libfs_symlink succeeded: 0
+```
+
+**libfs-read**
+```bash
+$ libfs-read 
+[ERROR] usage: libfs-read <file-descriptor> <size>
+$ libfs-read 23 1024
+[INFO] libfs_read succeeded: 0
+Hello, World!
+```
+
+**libfs-rename**
+```bash
+$ libfs-rename 
+[ERROR] usage: ./libfs-rename <old-name> <new-name>
+$ libfs-rename my.txt mine.txt
+[INFO] libfs_rename succeeded: 0
+```
+
+**libfs-seek**
+```bash
+$ libfs-seek 
+[ERROR] usage: ./libfs-seek <file-descriptor> [offset]
+$ libfs-seek 5 12
+[INFO] libfs_seek succeeded: 12
+```
+
+**libfs-unlink**
+```bash
+$ libfs-unlink 
+[ERROR] usage: ./libfs-unlink <path>
+$ libfs-unlink hello-2.txt
+[INFO] libfs_unlink succeeded: 0
+```
+
+**libfs-stat**
+```bash
+$ libfs-stat 
+[ERROR] usage: ./libfs-stat <file-descriptor>
+$ libfs-stat 4        
+[INFO] libfs_stat succeeded: 0
+System Inode number:                    340230
+File type and mode:                     33279
+Number of hard links:                   1
+Total size, in bytes:                   14
+Block size for filesystem I/O:          4096
+Number of 512B blocks allocated:        8
+
+Time of last access:                    1685822639.257317168
+Time of last modification:              1685822638.637305748
+Time of last status change:             1685822638.637305748
+```
 
 ## Przykładowe wykorzystanie
 
 Przykładowe użycie kilku z tych programów (sprowadzających się z grubsza do wywołania odpowiedniej funkcji biblioteki `libfs.a`) z poziomu bash'a:
 
 ```bash
-libfs-create hello.txt
-fdw=$(libfs-open -w hello.txt)
-libfs-write $fdw "Hello"
-libfs-close $fdw
+FDW=$(libfs-create hello.txt)
 
-fdr=$(libfs-open -r hello.txt)
-content=$(libfs-read $fdr)
-libfs-close $fdr
+BYTES_WRITTEN=$(libfs-write $FDW "Hello, World!")
+libfs-close $FDW
 
-echo $content
+FDR=$(libfs-open hello.txt 1)
+CONTENT=$(libfs-read $FDR 1024)
+libfs-close $FDR
+
+echo $CONTENT
 ```
-
-<!-- Opis najważniejszych rozwiązań funkcjonalnych wraz z uzasadnieniem (opis protokołów, struktur danych, kluczowych funkcji, itp.) -->
-
-<!-- Szczegółowy opis interfejsu użytkownika. -->
-
 
 # Implementacja
 <!-- Zarys koncepcji implementacji (język, biblioteki, narzędzia, etc.). -->
@@ -365,6 +519,6 @@ Do testowania służyć będą małe programy wołające funkcje biblioteczne. A
 
 Skrypty te będą wywoływane przez główny "runner", `test.sh`, który będzie porównywać ich output i exit code z oczekiwanymi.
 
-<!--  Szczegółowy opis testów i wyników testowania -->
+<!-- TODO: Szczegółowy opis testów i wyników testowania. -->
 
 <!-- Należy pamiętać, że nie mamy opisywać kwestii znanych i omawianych na wykładzie, np. zasady funkcjonowania API i funkcji systemowych, standardowych narzędzi programistycznych, itp. -->
