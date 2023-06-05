@@ -15,8 +15,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // TODO: verify content lenght works correctly
-    ssize_t result = libfs_write(atoi(argv[1]), (u8*)argv[2], (u32)strlen(argv[2]) + 1);
+    ssize_t result = libfs_write(atoi(argv[1]), (u8*)argv[2], (u32)strlen(argv[2]));
 
     if (result < 0) {
         LOG_LIBFS_ERRNO("libfs_write failed");
