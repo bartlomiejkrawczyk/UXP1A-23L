@@ -4,17 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+// #include <syslog.h>
 #include <unistd.h>
 
 // If we decide to log to a file, uncomment this.
 // #define TERMCOLOR_DISABLE
 
+#include "dispatchers.h"
+#include "globals.h"
 #include "libfs_locations.h"
 #include "log.h"
 #include "types.h"
 #include "utils.h"
-#include "globals.h"
-#include "dispatchers.h"
 
 #define DAEMON_LOG_PATH "libfs_daemon.log"
 
@@ -138,9 +139,90 @@ void terminate_handler(int signal) {
     shutdown_daemon(0);
 }
 
+static void start_daemon() {
+    pid_t pid;
+
+    LOG_INFO("%s", "pid");
+    /* Fork off the parent process */
+    pid = fork();
+    LOG_INFO("%s %d", "forked", pid);
+
+    /* An error occurred */
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+    LOG_INFO("%s", "parent or child");
+
+    /* Success: Let the parent terminate */
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+    LOG_INFO("%s", "child");
+
+    /* On success: The child process becomes session leader */
+    if (setsid() < 0)
+        exit(EXIT_FAILURE);
+    LOG_INFO("%s", "ignore signals");
+
+    /* Catch, ignore and handle signals */
+    // TODO: Implement a working signal handler */
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    /* Fork off for the second time*/
+    pid = fork();
+    LOG_INFO("%s", "second fork");
+
+    /* An error occurred */
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+
+    /* Success: Let the parent terminate */
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+    LOG_INFO("%s", "child");
+
+    /* Set new file permissions */
+    umask(0);
+
+    /* Change the working directory to the root directory */
+    /* or another appropriated directory */
+    chdir("/");
+    LOG_INFO("%s", "change root");
+
+    char logs_buffer[256];
+    libfs_get_logs_path(logs_buffer, 256);
+
+    char out_buffer[256];
+    strcpy(out_buffer, logs_buffer);
+    strcat(out_buffer, "out.log");
+
+    char err_buffer[256];
+    strcpy(err_buffer, logs_buffer);
+    strcat(err_buffer, "err.log");
+    LOG_INFO("%s", logs_buffer);
+    LOG_INFO("%s", out_buffer);
+    LOG_INFO("%s", err_buffer);
+
+    /* Close all open file descriptors */
+    int x;
+    for (x = (int)sysconf(_SC_OPEN_MAX); x >= 0; x--) {
+        close(x);
+    }
+
+    stdin = fopen("/dev/null", "r");   // fd=0
+    stdout = fopen(out_buffer, "w+");  // fd=1
+    stderr = fopen(err_buffer, "w+");  // fd=2
+
+    // openlog("firstdaemon", LOG_PID, LOG_DAEMON);
+}
+
 int main(int argc, char* argv[]) {
     (void)argc;  // unused
     (void)argv;  // unused
+
+    LOG_INFO("%s", "starting daemon");
+    LOG_INFO("pid: %d", getpid());
+
+    start_daemon();
 
     LOG_INFO("%s", "starting daemon");
     LOG_INFO("pid: %d", getpid());
