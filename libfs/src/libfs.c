@@ -58,6 +58,8 @@ static int read_response(fd_type fd, libfs_response_t* response) {
 static int request_daemon_response(const libfs_request_t* request, libfs_response_t* response) {
     char path_buf[256];
 
+    // TODO: check if file exists and if not start the daemon
+
     // open the main pipe
     libfs_get_main_pipe_path(path_buf, 256);
     fd_type request_fd = open(path_buf, O_WRONLY);
