@@ -432,7 +432,7 @@ void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
 
     LOG_INFO("path: %s", path_buf);
 
-    // FIXME: change me to symlink!!!
+    // FIXME: change me to symlink!!! TODO
     int result = link(source_buf, destination_buf);
 
     if (result < 0) {
