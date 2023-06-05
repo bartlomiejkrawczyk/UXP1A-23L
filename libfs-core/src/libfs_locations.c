@@ -11,6 +11,7 @@
 
 #define LIBFS_STORAGE_PATH "/.local/share/libfs/"
 #define LIBFS_PIPES_PATH "pipes/"
+#define LIBFS_LOGS_PATH "logs/"
 #define LIBFS_FILES_PATH "files/"
 #define LIBFS_MAIN_PIPE "main_pipe"
 
@@ -39,6 +40,19 @@ isize libfs_get_pipes_path(char* buffer, usize max_size) {
         return -1;
     }
     strcat(buffer, LIBFS_PIPES_PATH);
+    return (isize)total_len;
+}
+
+isize libfs_get_logs_path(char* buffer, usize max_size) {
+    isize storage_path_len = libfs_get_storage_path(buffer, max_size);
+    if (storage_path_len < 0) {
+        return -1;
+    }
+    usize total_len = (usize)storage_path_len + strlen(LIBFS_LOGS_PATH);
+    if (total_len > max_size) {
+        return -1;
+    }
+    strcat(buffer, LIBFS_LOGS_PATH);
     return (isize)total_len;
 }
 
@@ -96,6 +110,16 @@ isize libfs_ensure_directories(void) {
     }
 
     len = libfs_get_pipes_path(buffer, sizeof(buffer));
+    if (len < 0) {
+        return -1;
+    }
+    if (access(buffer, F_OK) < 0) {
+        if (mkdir(buffer, 0700) < 0) {
+            return -1;
+        }
+    }
+
+    len = libfs_get_logs_path(buffer, sizeof(buffer));
     if (len < 0) {
         return -1;
     }
