@@ -141,52 +141,31 @@ void terminate_handler(int signal) {
 
 static void start_daemon() {
     pid_t pid;
-
-    LOG_INFO("%s", "pid");
-    /* Fork off the parent process */
     pid = fork();
-    LOG_INFO("%s %d", "forked", pid);
 
-    /* An error occurred */
     if (pid < 0)
         exit(EXIT_FAILURE);
-    LOG_INFO("%s", "parent or child");
 
-    /* Success: Let the parent terminate */
     if (pid > 0)
         exit(EXIT_SUCCESS);
-    LOG_INFO("%s", "child");
 
-    /* On success: The child process becomes session leader */
     if (setsid() < 0)
         exit(EXIT_FAILURE);
-    LOG_INFO("%s", "ignore signals");
 
-    /* Catch, ignore and handle signals */
-    // TODO: Implement a working signal handler */
     signal(SIGCHLD, SIG_IGN);
     signal(SIGHUP, SIG_IGN);
 
-    /* Fork off for the second time*/
     pid = fork();
-    LOG_INFO("%s", "second fork");
 
-    /* An error occurred */
     if (pid < 0)
         exit(EXIT_FAILURE);
 
-    /* Success: Let the parent terminate */
     if (pid > 0)
         exit(EXIT_SUCCESS);
-    LOG_INFO("%s", "child");
 
-    /* Set new file permissions */
     umask(0);
 
-    /* Change the working directory to the root directory */
-    /* or another appropriated directory */
     chdir("/");
-    LOG_INFO("%s", "change root");
 
     char logs_buffer[256];
     libfs_get_logs_path(logs_buffer, 256);
@@ -198,29 +177,28 @@ static void start_daemon() {
     char err_buffer[256];
     strcpy(err_buffer, logs_buffer);
     strcat(err_buffer, "err.log");
-    LOG_INFO("%s", logs_buffer);
-    LOG_INFO("%s", out_buffer);
-    LOG_INFO("%s", err_buffer);
 
-    /* Close all open file descriptors */
-    int x;
-    for (x = (int)sysconf(_SC_OPEN_MAX); x >= 0; x--) {
-        close(x);
+    LOG_INFO("New stdout: %s", out_buffer);
+    LOG_INFO("New stderr: %s", err_buffer);
+
+    int fd;
+    for (fd = (int)sysconf(_SC_OPEN_MAX); fd >= 0; fd--) {
+        close(fd);
     }
 
-    stdin = fopen("/dev/null", "r");   // fd=0
-    stdout = fopen(out_buffer, "w+");  // fd=1
-    stderr = fopen(err_buffer, "w+");  // fd=2
+    if (libfs_ensure_directories() < 0) {
+        LOG_ERROR("%s", "could not ensure directories");
+        exit(1);
+    }
 
-    // openlog("firstdaemon", LOG_PID, LOG_DAEMON);
+    stdin = fopen("/dev/null", "r");
+    stdout = fopen(out_buffer, "w+");
+    stderr = fopen(err_buffer, "w+");
 }
 
 int main(int argc, char* argv[]) {
     (void)argc;  // unused
     (void)argv;  // unused
-
-    LOG_INFO("%s", "starting daemon");
-    LOG_INFO("pid: %d", getpid());
 
     start_daemon();
 
@@ -235,11 +213,6 @@ int main(int argc, char* argv[]) {
     libfs_get_main_pipe_path(g_libfs_pipe_path, 256);
 
     LOG_INFO("main pipe path: %s", g_libfs_pipe_path);
-
-    if (libfs_ensure_directories() < 0) {
-        LOG_ERROR("%s", "could not ensure directories");
-        exit(1);
-    }
 
     int result = access(g_libfs_pipe_path, F_OK);
 
