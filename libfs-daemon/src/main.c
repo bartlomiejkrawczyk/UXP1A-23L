@@ -4,17 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+// #include <syslog.h>
 #include <unistd.h>
 
 // If we decide to log to a file, uncomment this.
 // #define TERMCOLOR_DISABLE
 
+#include "dispatchers.h"
+#include "globals.h"
 #include "libfs_locations.h"
 #include "log.h"
 #include "types.h"
 #include "utils.h"
-#include "globals.h"
-#include "dispatchers.h"
 
 #define DAEMON_LOG_PATH "libfs_daemon.log"
 
@@ -138,9 +139,68 @@ void terminate_handler(int signal) {
     shutdown_daemon(0);
 }
 
+static void start_daemon() {
+    pid_t pid;
+    pid = fork();
+
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+
+    if (setsid() < 0)
+        exit(EXIT_FAILURE);
+
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    pid = fork();
+
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+
+    umask(0);
+
+    chdir("/");
+
+    char logs_buffer[256];
+    libfs_get_logs_path(logs_buffer, 256);
+
+    char out_buffer[256];
+    strcpy(out_buffer, logs_buffer);
+    strcat(out_buffer, "out.log");
+
+    char err_buffer[256];
+    strcpy(err_buffer, logs_buffer);
+    strcat(err_buffer, "err.log");
+
+    LOG_INFO("New stdout: %s", out_buffer);
+    LOG_INFO("New stderr: %s", err_buffer);
+
+    int fd;
+    for (fd = (int)sysconf(_SC_OPEN_MAX); fd >= 0; fd--) {
+        close(fd);
+    }
+
+    if (libfs_ensure_directories() < 0) {
+        LOG_ERROR("%s", "could not ensure directories");
+        exit(1);
+    }
+
+    stdin = fopen("/dev/null", "r");
+    stdout = fopen(out_buffer, "w+");
+    stderr = fopen(err_buffer, "w+");
+}
+
 int main(int argc, char* argv[]) {
     (void)argc;  // unused
     (void)argv;  // unused
+
+    start_daemon();
 
     LOG_INFO("%s", "starting daemon");
     LOG_INFO("pid: %d", getpid());
@@ -153,11 +213,6 @@ int main(int argc, char* argv[]) {
     libfs_get_main_pipe_path(g_libfs_pipe_path, 256);
 
     LOG_INFO("main pipe path: %s", g_libfs_pipe_path);
-
-    if (libfs_ensure_directories() < 0) {
-        LOG_ERROR("%s", "could not ensure directories");
-        exit(1);
-    }
 
     int result = access(g_libfs_pipe_path, F_OK);
 
