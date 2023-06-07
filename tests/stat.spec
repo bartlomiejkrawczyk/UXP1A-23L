@@ -1,0 +1,2 @@
+0
+System Inode number:  File type and mode:  Number of hard links:  Total size, in bytes:  Block size for filesystem I/O:  Number of B blocks allocated:  Time of last access: . Time of last modification: . Time of last status change: .
