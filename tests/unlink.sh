@@ -1,18 +1,17 @@
 #!/bin/bash
 
-FDW=$(libfs-create test_unlink.txt)
-BYTES_WRITTEN=$(libfs-write $FDW "Before link")
+FILE="unlink.txt"
+
+FDW=$(libfs-create "$FILE")
 libfs-close $FDW
 
-libfs-link test_unlink.txt test_unlink2.txt
+# Delete created file
 
-FDR=$(libfs-open test_unlink2.txt -r)
-CONTENT=$(libfs-read $FDR 1024)
-libfs-close $FDR
+libfs-unlink "$FILE"
 
-echo $CONTENT
+# Deleted file cannot be open
 
-libfs-unlink test_unlink2.txt
+libfs-open "$FILE"
 
-# FDR=$(libfs-open test_unlink2.txt -r)
-# libfs-close $FDR
+# Cannot delete already deleted file
+libfs-unlink "$FILE"
