@@ -76,7 +76,9 @@ for test in $TESTS; do
     if [ -f "$specpath" ]; then
         spec=$(cat $specpath)
         expected_exit_code=$(echo "$spec" | head -n 1)
+        echo Expected code: $expected_exit_code
         expected_output=$(echo "$spec" | tail -n +2)
+        echo Expected output: $expected_output
     else
         printf "\n${WARNING_COLOR}No spec found, assuming exit code 0 and no output${NC}... "
     fi
@@ -89,7 +91,10 @@ for test in $TESTS; do
         else
             printf "${ERROR_COLOR}FAIL${NC}\n"
             printf "Output diff:\n"
-            diff --color=always -u <(echo "$expected") <(echo "$output")
+            diff --color=always -u <(echo "$expected_output") <(echo "$output")
+
+            echo "Expected: $expected_output"
+            echo "Provided: $output"
         fi
     else
         printf "${ERROR_COLOR}FAIL${NC}\n"
