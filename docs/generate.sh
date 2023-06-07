@@ -62,6 +62,7 @@ pandoc $INPUT \
     --pdf-engine=latexmk \
     --from markdown \
     -F mermaid-filter \
-    --template include/wut-template.tex
+    --template include/wut-template.tex \
+    -H disable_float.tex
 
 rm mermaid-filter.err

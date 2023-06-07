@@ -158,7 +158,7 @@ int libfs_symlink(const char* source, const char* destination);
 <!-- Krótki opis funkcjonalny – “black-box”, najlepiej w punktach. -->
 <!-- Pełen opis funkcjonalny “black-box”. -->
 
-Nasza usługa udostępnia prosty system plików, który składa się z jednego katalogu bez możliwości tworzenia podkatalogów. W ramach tego systemu plików obsługujemy trzy rodzaje plików: pliki zwykłe, twarde dowiązania oraz symboliczne dowiązania.
+Nasza demon udostępnia prosty system plików, który składa się z jednego katalogu bez możliwości tworzenia podkatalogów. W ramach tego systemu plików obsługujemy trzy rodzaje plików: pliki zwykłe, twarde dowiązania oraz symboliczne dowiązania.
 
 Dostępne operacje, które można wykonać na plikach w naszym systemie plików, obejmują:
 
@@ -174,7 +174,7 @@ Dostępne operacje, które można wykonać na plikach w naszym systemie plików,
 
 6. Odczyt i zapis danych: Użytkownik ma możliwość odczytu i zapisu danych wewnątrz otwartego pliku. Może przeglądać jego zawartość lub zmieniać ją według potrzeb.
 
-7. Przesunięcie wskaznika pozycji: Pozwalamy na przesunięcie wskaznika pozycji wewnątrz otwartego pliku. Użytkownik może przesuwać się do określonej pozycji w pliku, aby odczytać lub zapisać dane w wybranym miejscu.
+7. Przesunięcie wskaźnika pozycji: Pozwalamy na przesunięcie wskaźnika pozycji wewnątrz otwartego pliku. Użytkownik może przesuwać się do określonej pozycji w pliku, aby odczytać lub zapisać dane w wybranym miejscu.
 
 8. Zamknięcie pliku: Po zakończeniu operacji użytkownik może zamknąć plik, zwalniając zasoby systemowe z nim związane.
 
@@ -190,11 +190,9 @@ W naszym systemie plików obsługa uprawnień jest zgodna z mechanizmami systemo
 
 <!-- Opis i analizę poprawności stosowanych: struktur danych, metod komunikacja, metod synchronizacji, moduły wraz z przepływem sterowania i danych między nimi. -->
 
-<!-- TODO: Podział na moduły i strukturę komunikacji między nimi (silnie wskazany rysunek). -->
-
 ## Struktury danych
 
-W celu komunikacji między procesami ustaliliśmy standardowe formaty komunikatów przesyłanych poprzez kolejki. Pozwoli to nam na prostą obsługę serializacji i deserializacji przesyłanych komunikatów.
+W celu komunikacji między procesami ustaliliśmy standardowe formaty komunikatów przesyłanych poprzez kolejki. Pozwala to nam na prostą obsługę serializacji i deserializacji przesyłanych komunikatów.
 
 Przyjęliśmy następującą konwencję nazewnictwa:
 
@@ -236,9 +234,9 @@ typedef struct libfs_response {
 } libfs_response_t;
 ```
 
-TODO: Format tego tego co wysyłamy jest specjalnie serializowany, tak żeby status rozmiar i dane były obok siebie.
+Kolejne bajty struktur przesyłane są przez strumień. Demon odczytuje ze strumienia kolejne bajty i deserializuje struktury.
 
-W czasie deserializacji struktur oszczędzamy pamięć dzięki mapowaniu wskaźników na struktury występujące w obiekcie pozyskanym z kolejki. TODO
+W czasie deserializacji oszczędzamy pamięć dzięki mapowaniu wskaźników na struktury występujące w obiekcie pozyskanym z kolejki.
 
 ## Metody Komunikacji i Synchronizacji
 <!-- Koncepcja realizacji współbieżności. -->
@@ -259,7 +257,6 @@ flowchart TB
 
     D -- client 1 fifo --> C1
     D -- client 2 fifo --> C2
-
 ```
 
 Demon blokuje się na kolejce, czeka, aż coś zostanie w niej umieszczone. W momencie gdy coś pojawi się w kolejce, demon wczytuje pełną strukturę. Następnie przetwarza odczytaną strukturę na odpowiadającą otrzymanemu typowi. Następuje obsługa requestu - demon wykonuje odpowiednie przetworzenia. Na koniec na podstawie otrzymanej w requeście wartości pid_t sendera wysyła odpowiedź do odpowiedniej klienckiej kolejki. Proces ten jest powtarzany.
@@ -277,10 +274,11 @@ Klienckie funkcje biblioteczne będą odpowiedzialne, za utworzenie własnych ko
 
 Synchronizacja na poziomie kolejek klienckich nie jest potrzebna, ponieważ tylko jeden proces zapisuje do kolejki i jeden odczytuje. Natomiast w przypadku kolejki demona, musimy zapewnić synchronizację zapisów, do tego wykorzystamy funkcję `flock()`, dzięki której jesteśmy w stanie zablokować procesy chcące pisać do kolejki w tym samym czasie. Kolejne procesy, które będą chciały zacząć pisać zostaną zablokowane na tej funkcji do czasu zwolnienia blokady.
 
-<!-- TODO: opis dwóch piszących procesów - są kolejkowane -->
+Demon działa na jednym wątku, co oznacza, że może wykonywać tylko jedno zadanie w danym momencie. W przypadku, gdy demon otrzymuje wiele żądań, będzie je wykonywał kolejno, po zakończeniu poprzedniego zadania. W takiej sytuacji nie ma potrzeby implementacji synchronizacji, ponieważ demon automatycznie przetwarza żądania w kolejności ich otrzymania.
+W
 ## Moduły
 
-```mermaid
+```{ .mermaid caption="Wydzielone moduły"}
 flowchart LR
     subgraph Client-Daemon\nMessage Types
         libfs-core[libfs-core.a]
@@ -344,16 +342,11 @@ Biblioteka `libfs.a` zawiera obsługę odpowiedzi, a także obsługę wartości 
 
 Obsługa zapytań `request` została zaimplementowana wewnątrz programu demona, nie ma potrzeby implementowania jej w oddzielnych bibliotekach.
 
-
-<!-- TODO: Opis najważniejszych rozwiązań funkcjonalnych wraz z uzasadnieniem (opis protokołów, struktur danych, kluczowych funkcji, itp.) -->
-
-<!-- TODO:  Szczegółowy opis interfejsu użytkownika. -->
-
-<!-- TODO: Postać wszystkich plików konfiguracyjnych, logów, itp. -->
-
 # Interfejs użytkownika
 
-- programy klienckie
+Przygotowaliśmy niewielkie programy klienckie korzystające z biblioteki. Każdy z tych programów jest odpowiedzialny za wykonywanie jednej funkcji bibliotecznej. W folderze `binaries/` dodaliśmy symlinki do plików wykonywalnych. Aby ułatwić kożystanie z plików wykonywalnych, możliwe jest dodanie tego folderu do zmiennej `PATH`.
+
+Każdy z programów jest odpowiedzialny za parsowanie argumentów przekazanych przez użytkownika. W przypadku gdy ilość argumentów się nie zgadza użytkownikowi pokazywany jest odpowiedni komunikat pokazujący jak powinien używać programu. Po zakończeniu, na standardowym wyjściu wyświetleny jest rezultat implementowanej funkcji.
 
 
 **libfs-create**
@@ -475,6 +468,7 @@ Time of last modification:              1685822638.637305748
 Time of last status change:             1685822638.637305748
 ```
 
+
 ## Przykładowe wykorzystanie
 
 Przykładowe użycie kilku z tych programów (sprowadzających się z grubsza do wywołania odpowiedniej funkcji biblioteki `libfs.a`) z poziomu bash'a:
@@ -485,11 +479,32 @@ FDW=$(libfs-create hello.txt)
 BYTES_WRITTEN=$(libfs-write $FDW "Hello, World!")
 libfs-close $FDW
 
-FDR=$(libfs-open hello.txt 1)
+FDR=$(libfs-open hello.txt -r)
 CONTENT=$(libfs-read $FDR 1024)
 libfs-close $FDR
 
 echo $CONTENT
+```
+
+# Pliki pomocniczne
+Pliki pomocnicze tworzone są w folderze `~/.local/share/libfs/`. Znajdziemy tam tworzone pliki, logi, a także strumienie.
+
+Po odpaleniu demona `libfs-daemon` przekierowujem standardowe wyjście oraz standardowe wyjście błędów odpowiednio do plików `logs/out.log` oraz `logs/err.log`.
+
+Przykładowa zawartość logów:
+
+```txt
+[WARN] sender did not create pipe yet, retrying in 1 second
+[INFO] status: 0, data_size: 4
+[WARN] pipe closed, trying to recover...
+[INFO] opened pipe fd: 3
+[INFO] received request kind: 5
+[INFO] request coming from pid: 2483
+[INFO] total request buffer size: 24
+[INFO] read 8 bytes
+[INFO] dispatching request kind: 5
+[INFO] dispatcher read
+[INFO] fd: 159, size: 1024
 ```
 
 # Implementacja
@@ -515,10 +530,125 @@ Biblioteka będzie budowana jako archiwum `.a`.
 # Testowanie
 
 <!-- Zarys koncepcji testów -->
-Do testowania służyć będą małe programy wołające funkcje biblioteczne. Aby kompleksowo przetestować poszczególne przypadki, każdy przypadek użycia będzie reprezentowany skryptem bash, który będzie uruchamiać małe programy w zadanej kolejności.
+Do testowania służą małe programy wołające funkcje biblioteczne. Aby kompleksowo przetestować poszczególne przypadki, każdy przypadek użycia jest reprezentowany skryptem bash, który uruchamia poszczególne programy w zadanej kolejności.
 
-Skrypty te będą wywoływane przez główny "runner", `test.sh`, który będzie porównywać ich output i exit code z oczekiwanymi.
+Skrypty te są wywoływane przez główny "runner", `test.sh`, który porównuje ich output i exit code z oczekiwanymi.
 
-<!-- TODO: Szczegółowy opis testów i wyników testowania. -->
+Przykładowy test:
+
+- plik wkonywalny *.sh
+```sh
+#!/bin/bash
+
+FILE="open.txt"
+
+libfs_read() {
+    FDR=$(libfs-open "$FILE" -r)
+    CONTENT=$(libfs-read "$FDR" 1024)
+    libfs-close "$FDR"
+
+    echo $CONTENT
+}
+
+# Prepare files
+
+FDW=$(libfs-create "$FILE" rw-rw-rw-)
+BYTES_WRITTEN=$(libfs-write "$FDW" "CONTENT")
+libfs-close "$FDW"
+
+libfs_read
+
+# Change file mode
+
+libfs-chmode "$FILE" r--r--r--
+
+# Permission will be denied
+
+echo
+
+libfs-open "$FILE" -w
+
+# Read permission still works
+
+libfs_read
+
+# Once again change file mode
+
+libfs-chmode "$FILE" -w--w--w-
+
+echo
+
+# Now read does not work
+
+libfs-open "$FILE" -r
+
+# Clean up
+
+libfs-unlink "$FILE"
+```
+
+- plik z oczekiwanym wynikiem *.spec
+
+```txt
+0
+CONTENT
+0
+[ERROR] libfs_open failed: Permission denied (src/main.c:38)
+CONTENT
+0
+[ERROR] libfs_open failed: Permission denied (src/main.c:38)
+```
+
+**`write.sh`**
+
+Testowanie funkcji odpowiedzialnej za zapisywanie tekstu do pliku. Sprawdzamy czy zapis do stworzonego lub nowo otwartego pliku odbywa się na pozycji zerowej. Zapisujemy odzielnie teksty: "abcdefghijklmnopqrstwxyz"i "ala ma kota". Następnie razem "ALA MA KOTA" i "KOT MA ALE". Oczekujemy, że po odczytaniu tekstu z pliku początek pierwszego tekstu zostanie nadpisany "ala ma kotalmnopqrstwxyz". Z kolei w drugim przypadku oczekujemy połączenia dwóch tekstów "ALA MA KOTAKOT MA ALExyz"
+
+**`unlink.sh`**
+
+Testowanie funkcji usuwającej plik. Usuwamy plik i próbujemy go otworzyć. Oczekujemy błędu przy próbie otwarcia pliku, że takowy nie istnieje.
+
+**`symlink.sh`**
+
+Testowanie funkcji odpowiedzialnej za tworzenie dowiązania symbolicznego. Sprawdzamy, czy po utorzeniu dowiązania możliwe jest odczytanie zawartości pliku sprzed dowiązania, a także, czy możliwe jest nadpisywanie treści pisząc do pliku będącego linkiem oraz czy po usunięciu oryginalnego pliku nadal możemy odczytać zawartość linku oraz czy po przywróceniu oryginalnego pliku możemy odczytać treść wywołując libfs_read na linku. Oczekujemy, że po utworzeniu dowiązania będziemy mogli odczytać zawartość oryginalnego pliku, będziemy mogli zmieniać jego zawartość, a także po usunięciu oryginalnego pliku niemożliwe jest odczytanie zawartości pliku wskazywanego przez link, a po przywróceniu oryginalnego pliku zawartość będzie możliwa do odczytania.
+
+**`stat.sh`**
+
+Testowanie funkcji zwracającej informacje o pliku. Sprawdzamy, czy poprawnie odczytujemy informacje o nowo utworzonym pliku. Oczekujemy, że wszyskie informacje są poprawne.
+
+**`seek.sh`**
+
+Testowanie funkcji zmieniającej położenie przesunięcia w czasie odczytu/zapisu do pliku. Sprawdzamy czy funkcja w odpowiedni sposób przesuwa położenie zarówno w przód, podając dodatnią wartość jak i w tył podając wartość ujemną. Po przesunięciu wykonujemy operacje odczytu i zapisu. Na końcu próbujemy przesunąć się poza plik. Oczekujemy, że w odpowiednim miesjcu zostanie nadpisana wartość, a także w odpowiednim miejscu nastąpi odczytanie pliku, a po wyjściu seek-iem poza plik otrzymamy bład.
+
+**`rename.sh`**
+
+Testowanie funkcji odpowiedzialnej za zmianę nazwy pliku. Sprawdzamy czy możemy zmienić nazwę pliku, a także czy możliwe jest otwarcie pliku z nazwą przed modyfikacją. Oczekujemy, że możliwe jest odczytanie zawartośći z pliku z nową nazwą, z kolei przy próbie otwarcia pliku z poprzednią nazwą otrzymamy błąd.
+
+**`read.sh`**
+
+Testowanie funkcji odczytującej zawartość pliku. Zapisujemy kolejne wartości do pliku, odczytujemy zapisane wartości. Oczekujmy, że kolejno odczytane wartości są poprawne.
+
+**`open.sh`**
+
+Testowanie funkcji otwierającej plik. Sprawdzamy, czy możliwe jest otworzenie pliku ze wszystkimi prawami, czy możliwe jest otwarcie pliku mającego tylko prawa do zapisu w trybie czytania, a także na odwórt. Oczekujmy, że nowo utworzony plik ze wszystkimi prawami będziemy mogli otworzyć. Niemożliwe będzie otwarcie pliku w trybie czytania, kiedy plik posiada jedynie prawa do zapisu, a także niemożliwe będzie zapisanie do pliku, kiedy plik posiada jedynie prawa do odczytu.
+
+**`link.sh`**
+
+Testowanie funkcji tworzącej twade dowiąznia do pliku. Sprawdzamy, zawartości plików po utworzeniu dowiązania i zmienieniu jego zawartości, a także czy po usunięciu oryginalnego pliku możliwe jest odczytanie zawarości dowiązania. Oczekujemy, że od razu po utworzeniu twardego dowiązania zawartości plików są takie same, natomiast po usunięciu oryginalnego pliku możliwe jest odczywanie zawarości z pliku dowiązanego.
+
+**`create.sh`**
+
+Testowanie funkcji tworzącej plik. Sprawdzamy tworzenie plików z różnymi prawami. Oczekujemy, że możliwe jest zapisywanie do pliku z prawami read write oraz write, a z kolei niemożliwe tylko z prawami read i otrzymujmy błąd przy próbie odczytu pliku.
+
+**`close.sh`**
+
+Testowanie funkcji zamykającej plik. Sprawdzamy, czy jeżeli podamy poprawny deskryptor pliku możliwe jest zamknięcie pliku, a także, czy po podaniu niepoprawnego deskryptora zamkniemy plik. Oczekujemy, że w pierwszym przypadku operacja się powiedzie w drugim nie.
+
+**`chmode.sh`**
+
+Testowanie funkcji zmieniającej prawa pliku. Sprawdzamy, czy odpowiednio są zmieniane prawa pliku. Oczekujmy, że niemożlwe jest odczytanie pliku bez praw read i otrzymamy błąd, a po zmianie na prawa read, odczytanie będzie możliwe.
+
+**`concurrent.sh`**
+
+Testowanie synchronizacji demona. Sprawdzamy, czy zadania są odpowiednio kolejkowane. Oczekujemy, że wszystkie requesty przychodzące do demona nawet te równoległe są poprawnie wykonane.
 
 <!-- Należy pamiętać, że nie mamy opisywać kwestii znanych i omawianych na wykładzie, np. zasady funkcjonowania API i funkcji systemowych, standardowych narzędzi programistycznych, itp. -->
