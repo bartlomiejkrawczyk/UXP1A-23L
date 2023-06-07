@@ -16,7 +16,7 @@ usage() {
 clean_up_libfs() {
     killall -- libfs-daemon > /dev/null  2>&1 
     rm -rf "$HOME/.local/share/libfs"
-    libfs-daemon > /dev/null 2>&1
+    libfs-daemon > /dev/null 2>&1 &
     sleep 1
 }
 

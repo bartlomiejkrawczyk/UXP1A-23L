@@ -2,6 +2,9 @@
 
 all: libfs-core libfs-daemon libfs clients
 
+install: all
+	make -C libfs-daemon install
+
 clean:
 	make -C libfs-core clean
 	make -C libfs-daemon clean

@@ -23,6 +23,10 @@ WARN_FLAGS=-Wall -Wextra -Wpedantic -Werror -Wconversion -Wno-unused-function
 
 all: $(BIN_NAME)
 
+install: all
+	killall -q $(BIN_NAME) || true
+	cp $(BIN_NAME) "$(HOME)/.local/share/libfs/$(BIN_NAME)"
+
 $(OBJ_DIR)/%.o: src/%.c $(INCLUDE_FILES)
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(WARN_FLAGS) $(INCLUDE_PATHS) -c -o $@ $<
