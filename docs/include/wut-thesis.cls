@@ -286,13 +286,6 @@
     \newcommand{\@albumthird}{#1}
 }
 
-\newcommand{\authorfourth}[1]{
-    \newcommand{\@authorfourth}{#1}
-}
-\newcommand{\albumfourth}[1]{
-    \newcommand{\@albumfourth}{#1}
-}
-
 \newcommand{\engtitle}[1]{
     \newcommand{\@engtitle}{#1}
 }
@@ -344,11 +337,6 @@
         \normalsize
         \ifnum \pdf@strcmp{\@lang}{pl} = 0
             Numer~albumu \@albumthird \\
-        \fi
-        \LARGE \@authorfourth \\
-        \normalsize
-        \ifnum \pdf@strcmp{\@lang}{pl} = 0
-            Numer~albumu \@albumfourth \\
         \fi
         \vfill
         \ifnum \pdf@strcmp{\@lang}{pl} = 0
