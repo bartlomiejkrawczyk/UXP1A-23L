@@ -97,6 +97,32 @@ isize libfs_get_process_pipe_path(char* buffer, usize max_size, pid_t process_id
     return (isize)total_len;
 }
 
+isize libfs_get_lockfile_path(char* buffer, usize max_size) {
+    isize storage_path_len = libfs_get_storage_path(buffer, max_size);
+    if (storage_path_len < 0) {
+        return -1;
+    }
+    usize total_len = (usize)storage_path_len + 10;
+    if (total_len > max_size) {
+        return -1;
+    }
+    strcat(buffer, "lockfile");
+    return (isize)total_len;
+}
+
+isize libfs_get_daemon_path(char* buffer, usize max_size) {
+    isize storage_path_len = libfs_get_storage_path(buffer, max_size);
+    if (storage_path_len < 0) {
+        return -1;
+    }
+    usize total_len = (usize)storage_path_len + 13;
+    if (total_len > max_size) {
+        return -1;
+    }
+    strcat(buffer, "libfs-daemon");
+    return (isize)total_len;
+}
+
 isize libfs_ensure_directories(void) {
     char buffer[256];
     isize len = libfs_get_storage_path(buffer, sizeof(buffer));

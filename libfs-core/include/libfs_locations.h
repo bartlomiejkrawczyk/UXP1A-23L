@@ -38,5 +38,11 @@ isize libfs_get_files_path(char* buffer, usize max_size);
 // If the buffer is too small, -1 is returned.
 isize libfs_get_process_pipe_path(char* buffer, usize max_size, pid_t process_id);
 
+// Get the path to the lockfile for the daemon.
+isize libfs_get_lockfile_path(char* buffer, usize max_size);
+
+// Get the path to the daemon executable.
+isize libfs_get_daemon_path(char* buffer, usize max_size);
+
 // Ensure that the directories for the storage, pipes and files exist.
 isize libfs_ensure_directories(void);

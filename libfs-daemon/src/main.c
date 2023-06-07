@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 // #include <syslog.h>
 #include <unistd.h>
@@ -139,7 +140,7 @@ void terminate_handler(int signal) {
     shutdown_daemon(0);
 }
 
-static void start_daemon() {
+static void start_daemon(void) {
     pid_t pid;
     pid = fork();
 
@@ -178,9 +179,6 @@ static void start_daemon() {
     strcpy(err_buffer, logs_buffer);
     strcat(err_buffer, "err.log");
 
-    LOG_INFO("New stdout: %s", out_buffer);
-    LOG_INFO("New stderr: %s", err_buffer);
-
     int fd;
     for (fd = (int)sysconf(_SC_OPEN_MAX); fd >= 0; fd--) {
         close(fd);
@@ -210,30 +208,46 @@ int main(int argc, char* argv[]) {
 
     LOG_INFO("%s", "installed signal handlers");
 
+    char lockfile_path[256];
+
+    libfs_get_lockfile_path(lockfile_path, 256);
+
+    LOG_INFO("lockfile path: %s", lockfile_path);
+
+    int lockfile_fd = open(lockfile_path, O_RDWR | O_CREAT, 0666);
+
+    if (lockfile_fd == -1) {
+        LOG_ERRNO("could not open lockfile");
+        exit(1);
+    }
+
+    int result = flock(lockfile_fd, LOCK_EX | LOCK_NB);
+
+    if (result == -1) {
+        LOG_ERRNO("could not lock lockfile");
+        exit(1);
+    }
+
+    LOG_INFO("%s", "locked lockfile");
+
     libfs_get_main_pipe_path(g_libfs_pipe_path, 256);
 
     LOG_INFO("main pipe path: %s", g_libfs_pipe_path);
 
-    int result = access(g_libfs_pipe_path, F_OK);
+    result = access(g_libfs_pipe_path, F_OK);
 
     if (result == 0) {
-        LOG_INFO("%s", "pipe already exists, removing it");
-        result = unlink(g_libfs_pipe_path);
+        LOG_INFO("%s", "pipe already exists, no need to create it");
+    } else {
+        result = mkfifo(g_libfs_pipe_path, 0666);
 
         if (result == -1) {
-            LOG_ERRNO("could not remove pipe");
+            LOG_ERRNO("could not create pipe");
             exit(1);
         }
+
+        LOG_INFO("created pipe: %s", g_libfs_pipe_path);
     }
-
-    result = mkfifo(g_libfs_pipe_path, 0666);
-
-    if (result == -1) {
-        LOG_ERRNO("could not create pipe");
-        exit(1);
-    }
-
-    LOG_INFO("created pipe: %s", g_libfs_pipe_path);
 
     g_libfs_pipe_fd = open(g_libfs_pipe_path, O_RDONLY);
 
