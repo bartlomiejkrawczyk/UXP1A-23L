@@ -25,7 +25,7 @@ libfs-close "$FDW"
 
 # Create symlink between files
 
-libfs-link "$FILE" "$SYMLINK"
+libfs-symlink "$FILE" "$SYMLINK"
 
 # Read and write is possible using symlink
 

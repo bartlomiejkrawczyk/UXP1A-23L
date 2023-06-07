@@ -386,20 +386,20 @@ void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
         .st_size = file_stat.st_size,
         .st_blksize = file_stat.st_blksize,
         .st_blocks = file_stat.st_blocks,
-        .st_atim =
+        .st_atim = // file_stat.st_atime, // TODO: check this out
             {
                 .tv_sec = file_stat.st_atime,
-                .tv_nsec = (long int)file_stat.st_atimensec,
+                // .tv_nsec = (long int)file_stat.st_atimensec,
             },
-        .st_mtim =
+        .st_mtim = // file_stat.st_mtime,
             {
                 .tv_sec = file_stat.st_mtime,
-                .tv_nsec = (long int)file_stat.st_mtimensec,
+                // .tv_nsec = (long int)file_stat.st_mtimensec,
             },
-        .st_ctim =
+        .st_ctim = // file_stat.st_ctime,
             {
                 .tv_sec = file_stat.st_ctime,
-                .tv_nsec = (long int)file_stat.st_ctimensec,
+                // .tv_nsec = (long int)file_stat.st_ctimensec,
             },
     };
 
@@ -432,8 +432,7 @@ void symlink_handler(pid_t sender, const REQUEST_TYPE(symlink) * request) {
 
     LOG_INFO("path: %s", path_buf);
 
-    // FIXME: change me to symlink!!! TODO
-    int result = link(source_buf, destination_buf);
+    int result = symlink(source_buf, destination_buf);
 
     if (result < 0) {
         LOG_ERRNO("could not create a soft link to a file");
