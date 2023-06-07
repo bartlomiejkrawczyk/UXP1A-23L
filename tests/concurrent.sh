@@ -1,24 +1,27 @@
-# #!/bin/bash
+#!/bin/bash
 
-# FILE="concurrent.txt"
+FILE="concurrent.txt"
 
-# FDW=$(libfs-create "$FILE")
-# libfs-close "$FDW"
+FDW=$(libfs-create "$FILE")
+libfs-write "$FDW" "abcdefghijk lmnopqrstwxyz" > /dev/null
+libfs-close "$FDW"
 
 
-# FDW_1=$(libfs-open "$FILE")
-# FDW_2=$(libfs-open "$FILE")
+FDW_1=$(libfs-open "$FILE")
+FDW_2=$(libfs-open "$FILE")
 
-# libfs-write "$FDW_1" "$(<./files/random-file)" > /dev/null  &
-# libfs-write "$FDW_2" "test"
+libfs-seek "$FDW_2" 12
 
-# sleep 1
+libfs-write "$FDW_1" "ABCDEFGHIJK" > /dev/null  &
+libfs-write "$FDW_2" "LMNOPQRSTWXYZ" > /dev/null
 
-# libfs-close "$FDW_1"
-# libfs-close "$FDW_2"
+sleep 1
 
-# FDR=$(libfs-open "$FILE")
-# libfs-read "$FDR" 1024
-# libfs-close "$FDR"
+libfs-close "$FDW_1"
+libfs-close "$FDW_2"
 
-# libfs-unlink "$FILE"
+FDR=$(libfs-open "$FILE")
+libfs-read "$FDR" 1024
+libfs-close "$FDR"
+
+libfs-unlink "$FILE"
