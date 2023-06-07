@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    u32 size = (u32)atoi(argv[2]);
+    usize size = (usize)atoi(argv[2]);
     u8* buf = malloc(size);
     int result = libfs_read((fd_type)atoi(argv[1]), buf, size);
 

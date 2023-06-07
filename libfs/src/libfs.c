@@ -225,7 +225,7 @@ fd_type libfs_open(char* name, u32 flags) {
     return file_descriptor;
 }
 
-int libfs_read(fd_type fd, u8* buf, unsigned int size) {
+int libfs_read(fd_type fd, u8* buf, usize size) {
     libfs_request_read_t read_request = {
         .fd = fd,
         .size = size,

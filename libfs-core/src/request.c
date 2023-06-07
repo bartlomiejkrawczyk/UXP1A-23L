@@ -180,11 +180,11 @@ libfs_request_t libfs_request_read_pack(const libfs_request_read_t* request_read
     libfs_request_t request;
     request.kind = LIBFS_REQUEST_READ;
     request.sender = getpid();
-    request.data_size = sizeof(fd_type) + sizeof(u32);
+    request.data_size = sizeof(fd_type) + sizeof(usize);
     request.data = malloc(request.data_size);
 
     memcpy(request.data, &request_read->fd, sizeof(fd_type));
-    memcpy(request.data + sizeof(fd_type), &request_read->size, sizeof(u32));
+    memcpy(request.data + sizeof(fd_type), &request_read->size, sizeof(usize));
 
     return request;
 }

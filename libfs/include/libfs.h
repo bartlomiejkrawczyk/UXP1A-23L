@@ -13,7 +13,7 @@ int libfs_link(const char *source, const char *destination);
 
 fd_type libfs_open(char *name, u32 flags);
 
-int libfs_read(fd_type fd, u8 *buf, unsigned int size);
+int libfs_read(fd_type fd, u8* buf, usize size);
 
 int libfs_rename(char *oldname, char *newname);
 
