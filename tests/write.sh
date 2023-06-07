@@ -28,7 +28,13 @@ libfs_write "ala ma kota"
 
 libfs_read
 
-libfs_write "ALA MA KOTA"
+FDW=$(libfs-open "$FILE" -w)
+BYTES_WRITTEN=$(libfs-write "$FDW" "ALA MA KOTA")
+
+libfs_read
+
+BYTES_WRITTEN=$(libfs-write "$FDW" "KOT MA ALE")
+libfs-close "$FDW"
 
 libfs_read
 
