@@ -23,15 +23,25 @@ FDW=$(libfs-create "$FILE" rwxrwxrwx)
 BYTES_WRITTEN=$(libfs-write "$FDW" "FILE")
 libfs-close "$FDW"
 
+# Create hard link between files
+
 libfs-link "$FILE" "$HARD_LINK"
+
+# Read and write is possible using hard link
 
 libfs_read "$HARD_LINK"
 
 libfs_write "$HARD_LINK" "LINK"
 
+# Changes are made to the FILE too
+
 libfs_read "$FILE"
 
+# Delete one of the linked files
+
 libfs-unlink "$FILE"
+
+# File content is still available
 
 libfs_read "$HARD_LINK"
 
