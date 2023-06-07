@@ -45,4 +45,12 @@ libfs-unlink "$FILE"
 
 libfs_read "$HARD_LINK"
 
+# After adding file named FILE, the content of HARD_LINK stays the same
+
+FDW=$(libfs-create "$FILE" rwxrwxrwx)
+BYTES_WRITTEN=$(libfs-write "$FDW" "AFTER")
+libfs-close "$FDW"
+
+libfs_read "$HARD_LINK"
+
 libfs-unlink "$HARD_LINK"
