@@ -1,0 +1,4 @@
+0
+abcdefghijklmnopqrstwxyz
+ala ma kotalmnopqrstwxyz
+ALA MA KOTAlmnopqrstwxyz
