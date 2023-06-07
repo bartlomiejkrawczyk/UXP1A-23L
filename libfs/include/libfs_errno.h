@@ -16,6 +16,10 @@
 #define LIBFS_ERRNO_PPIPE_READ 2005
 // Process pipe write error
 #define LIBFS_ERRNO_PPIPE_WRITE 2006
+// Message pipe lock error
+#define LIBFS_ERRNO_MPIPE_LOCK 2007
+// Message pipe unlock error
+#define LIBFS_ERRNO_MPIPE_UNLOCK 2007
 
 extern thread_local int libfs_errno;
 

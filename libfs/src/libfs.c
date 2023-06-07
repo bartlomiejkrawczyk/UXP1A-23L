@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -58,8 +59,6 @@ static int read_response(fd_type fd, libfs_response_t* response) {
 static int request_daemon_response(const libfs_request_t* request, libfs_response_t* response) {
     char path_buf[256];
 
-    // TODO: check if file exists and if not start the daemon
-
     // open the main pipe
     libfs_get_main_pipe_path(path_buf, 256);
     fd_type request_fd = open(path_buf, O_WRONLY);
@@ -68,17 +67,27 @@ static int request_daemon_response(const libfs_request_t* request, libfs_respons
         libfs_set_errno(LIBFS_ERRNO_MPIPE_OPEN);
         return -1;
     }
+    
+    if (flock(request_fd, LOCK_EX) < 0) {
+        libfs_set_errno(LIBFS_ERRNO_MPIPE_LOCK);
+        return -1;
+    }
 
     usize buffer_size = libfs_request_size(request);
     u8* buffer = libfs_request_serialize(request);
 
     isize result = write(request_fd, buffer, buffer_size);
 
+    if (flock(request_fd, LOCK_UN) < 0) {
+        libfs_set_errno(LIBFS_ERRNO_MPIPE_UNLOCK);
+        return -1;
+    }
+
     if (result <= 0 || (usize)result != buffer_size) {
         libfs_set_errno(LIBFS_ERRNO_MPIPE_WRITE);
         return -1;
     }
-
+    
     close(request_fd);
     free(buffer);
 
