@@ -18,7 +18,7 @@ libfs_read() {
 
 # Prepare files
 
-FDW=$(libfs-create chmode.txt rwxrwxrwx)
+FDW=$(libfs-create "$FILE" rwxrwxrwx)
 BYTES_WRITTEN=$(libfs-write "$FDW" "Before chmode")
 libfs-close "$FDW"
 
@@ -26,13 +26,13 @@ libfs_read
 
 # Change file mode
 
-libfs-chmode chmode.txt r--r--r--
+libfs-chmode "$FILE" r--r--r--
 
 # Permission will be denied
 
 echo
 
-libfs-open chmode.txt -w
+libfs-open "$FILE" -w
 
 # Read permission still works
 
@@ -40,7 +40,7 @@ libfs_read
 
 # Once again change file mode
 
-libfs-chmode chmode.txt 755
+libfs-chmode "$FILE" 755
 
 echo
 
@@ -52,4 +52,4 @@ libfs_read
 
 # Clean up
 
-libfs-unlink chmode.txt
+libfs-unlink "$FILE"

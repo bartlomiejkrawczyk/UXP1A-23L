@@ -1,17 +1,38 @@
 #!/bin/bash
 
-FDW=$(libfs-create test_link.txt)
-BYTES_WRITTEN=$(libfs-write $FDW "Before link")
-libfs-close $FDW
+FILE="link.txt"
+HARD_LINK="hard_link.txt"
 
-libfs-link test_link.txt test_link2.txt
+libfs_write() {
+    FDW=$(libfs-open "$1" -w)
+    BYTES_WRITTEN=$(libfs-write "$FDW" "$2")
+    libfs-close "$FDW"
+}
 
-FDW=$(libfs-open test_link.txt -w)
-BYTES_WRITTEN=$(libfs-write $FDW "After link ")
-libfs-close $FDW
+libfs_read() {
+    FDR=$(libfs-open "$1" -r)
+    CONTENT=$(libfs-read "$FDR" 1024)
+    libfs-close "$FDR"
 
-FDR=$(libfs-open test_link2.txt -r)
-CONTENT=$(libfs-read $FDR 1024)
-libfs-close $FDR
+    echo $CONTENT
+}
 
-echo $CONTENT
+# Prepare files
+
+FDW=$(libfs-create "$FILE" rwxrwxrwx)
+BYTES_WRITTEN=$(libfs-write "$FDW" "FILE")
+libfs-close "$FDW"
+
+libfs-link "$FILE" "$HARD_LINK"
+
+libfs_read "$HARD_LINK"
+
+libfs_write "$HARD_LINK" "LINK"
+
+libfs_read "$FILE"
+
+libfs-unlink "$FILE"
+
+libfs_read "$HARD_LINK"
+
+libfs-unlink "$HARD_LINK"
