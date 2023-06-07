@@ -1,14 +1,34 @@
 #!/bin/bash
 
-FDW=$(libfs-create before.txt)
+FILE_BEFORE="before.txt"
+FILE_AFTER="after.txt"
 
-BYTES_WRITTEN=$(libfs-write $FDW "Before rename")
-libfs-close $FDW
+libfs_read() {
+    FDR=$(libfs-open "$1" -r)
+    CONTENT=$(libfs-read "$FDR" 1024)
+    libfs-close "$FDR"
 
-libfs-rename before.txt after.txt
+    echo $CONTENT
+}
 
-FDR=$(libfs-open after.txt -r)
-CONTENT=$(libfs-read $FDR 1024)
-libfs-close $FDR
+# Create read write file
 
-echo $CONTENT
+FDW=$(libfs-create "$FILE_BEFORE" rw-rw-rw-)
+BYTES_WRITTEN=$(libfs-write "$FDW" "CONTENT")
+libfs-close "$FDW"
+
+libfs_read "$FILE_BEFORE"
+
+# Reaname file
+
+libfs-rename "$FILE_BEFORE" "$FILE_AFTER"
+
+libfs_read "$FILE_AFTER"
+
+# File does not exist anymore
+
+libfs-open "$FILE_BEFORE"
+
+# Clean up
+
+libfs-unlink "$FILE_AFTER"
