@@ -92,9 +92,6 @@ for test in $TESTS; do
             printf "${ERROR_COLOR}FAIL${NC}\n"
             printf "Output diff:\n"
             diff --color=always -u <(echo "$expected_output") <(echo "$output")
-
-            echo "Expected: $expected_output"
-            echo "Provided: $output"
         fi
     else
         printf "${ERROR_COLOR}FAIL${NC}\n"
