@@ -76,9 +76,7 @@ for test in $TESTS; do
     if [ -f "$specpath" ]; then
         spec=$(cat $specpath)
         expected_exit_code=$(echo "$spec" | head -n 1)
-        echo Expected code: $expected_exit_code
         expected_output=$(echo "$spec" | tail -n +2)
-        echo Expected output: $expected_output
     else
         printf "\n${WARNING_COLOR}No spec found, assuming exit code 0 and no output${NC}... "
     fi
