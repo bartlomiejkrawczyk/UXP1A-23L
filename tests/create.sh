@@ -36,8 +36,8 @@ libfs-open "$FILE_WRITE" -r
 
 # Create read file
 
-FDR=$(libfs-create "$FILE_READ" 444)
-libfs-close "$FDR"
+FDW=$(libfs-create "$FILE_READ" 444)
+libfs-close "$FDW"
 
 libfs_read "$FILE_READ"
 
