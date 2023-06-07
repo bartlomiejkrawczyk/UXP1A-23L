@@ -241,7 +241,7 @@ W czasie deserializacji oszczędzamy pamięć dzięki mapowaniu wskaźników na 
 ## Metody Komunikacji i Synchronizacji
 <!-- Koncepcja realizacji współbieżności. -->
 
-```mermaid
+```{ .mermaid caption="Przepływ komunikatów"}
 flowchart TB
     D[Libfs Daemon]
     FM[daemon request FIFO]
@@ -275,7 +275,9 @@ Klienckie funkcje biblioteczne będą odpowiedzialne, za utworzenie własnych ko
 Synchronizacja na poziomie kolejek klienckich nie jest potrzebna, ponieważ tylko jeden proces zapisuje do kolejki i jeden odczytuje. Natomiast w przypadku kolejki demona, musimy zapewnić synchronizację zapisów, do tego wykorzystamy funkcję `flock()`, dzięki której jesteśmy w stanie zablokować procesy chcące pisać do kolejki w tym samym czasie. Kolejne procesy, które będą chciały zacząć pisać zostaną zablokowane na tej funkcji do czasu zwolnienia blokady.
 
 Demon działa na jednym wątku, co oznacza, że może wykonywać tylko jedno zadanie w danym momencie. W przypadku, gdy demon otrzymuje wiele żądań, będzie je wykonywał kolejno, po zakończeniu poprzedniego zadania. W takiej sytuacji nie ma potrzeby implementacji synchronizacji, ponieważ demon automatycznie przetwarza żądania w kolejności ich otrzymania.
-W
+
+W celu zapewnienia wygody korzystania z biblioteki ustaliliśmy, że demon będzie automatycznie tworzony w momencie wywołania pierwszej funkcji bibliotecznej.
+
 ## Moduły
 
 ```{ .mermaid caption="Wydzielone moduły"}
