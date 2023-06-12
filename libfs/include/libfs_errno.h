@@ -19,7 +19,7 @@
 // Message pipe lock error
 #define LIBFS_ERRNO_MPIPE_LOCK 2007
 // Message pipe unlock error
-#define LIBFS_ERRNO_MPIPE_UNLOCK 2007
+#define LIBFS_ERRNO_MPIPE_UNLOCK 2008
 
 extern thread_local int libfs_errno;
 
