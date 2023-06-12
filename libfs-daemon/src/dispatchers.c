@@ -268,7 +268,7 @@ void open_handler(pid_t sender, const REQUEST_TYPE(open) * request) {
 void read_handler(pid_t sender, const REQUEST_TYPE(read) * request) {
     LOG_INFO("fd: %d, size: %ld", request->fd, request->size);
 
-    u8* data = malloc(sizeof(request->size));
+    u8* data = malloc(request->size);
     ssize_t data_size = read(request->fd, data, request->size);
 
     if (data_size < 0) {
