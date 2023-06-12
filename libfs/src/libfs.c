@@ -92,7 +92,10 @@ static int libfs_pipe_unlock(fd_type fd) {
     return 0;
 }
 
+static void ensure_daemon(void);
+
 static int request_daemon_response(const libfs_request_t* request, libfs_response_t* response) {
+    ensure_daemon();
     char path_buf[256];
 
     // open the main pipe
@@ -112,13 +115,13 @@ static int request_daemon_response(const libfs_request_t* request, libfs_respons
         return -1;
     }
 
+    usize buffer_size = libfs_request_size(request);
+    u8* buffer = libfs_request_serialize(request);
+
     if (libfs_pipe_lock(request_fd) < 0) {
         libfs_set_errno(LIBFS_ERRNO_MPIPE_LOCK);
         return -1;
     }
-
-    usize buffer_size = libfs_request_size(request);
-    u8* buffer = libfs_request_serialize(request);
 
     isize result = write(request_fd, buffer, buffer_size);
 
@@ -193,9 +196,7 @@ static void ensure_daemon(void) {
 
     pid_t pid = fork();
 
-    if (pid < 0) {
-        return;
-    } else if (pid > 0) {
+    if (pid != 0) {
         return;
     }
 
@@ -211,7 +212,6 @@ static void ensure_daemon(void) {
 }
 
 int libfs_chmode(const char* name, u32 mode) {
-    ensure_daemon();
     libfs_request_chmode_t chmode_request = {
         .name = (char*)name,
         .mode = mode,
@@ -233,7 +233,6 @@ int libfs_chmode(const char* name, u32 mode) {
 }
 
 int libfs_close(fd_type fd) {
-    ensure_daemon();
     libfs_request_close_t close_request = {
         .fd = fd,
     };
@@ -254,7 +253,6 @@ int libfs_close(fd_type fd) {
 }
 
 fd_type libfs_create(const char* path, u32 mode) {
-    ensure_daemon();
     libfs_request_create_t create_request = {
         .name = (char*)path,
         .mode = mode,
@@ -278,7 +276,6 @@ fd_type libfs_create(const char* path, u32 mode) {
 }
 
 int libfs_link(const char* source, const char* destination) {
-    ensure_daemon();
     libfs_request_link_t link_request = {
         .source = (char*)source,
         .destination = (char*)destination,
@@ -300,7 +297,6 @@ int libfs_link(const char* source, const char* destination) {
 }
 
 fd_type libfs_open(char* name, u32 flags) {
-    ensure_daemon();
     libfs_request_open_t open_request = {
         .name = (char*)name,
         .flags = flags,
@@ -324,7 +320,6 @@ fd_type libfs_open(char* name, u32 flags) {
 }
 
 int libfs_read(fd_type fd, u8* buf, usize size) {
-    ensure_daemon();
     libfs_request_read_t read_request = {
         .fd = fd,
         .size = size,
@@ -348,7 +343,6 @@ int libfs_read(fd_type fd, u8* buf, usize size) {
 }
 
 int libfs_rename(char* oldname, char* newname) {
-    ensure_daemon();
     libfs_request_rename_t rename_request = {
         .old_name = (char*)oldname,
         .new_name = (char*)newname,
@@ -370,7 +364,6 @@ int libfs_rename(char* oldname, char* newname) {
 }
 
 ssize_t libfs_seek(fd_type fd, ssize_t offset) {
-    ensure_daemon();
     libfs_request_seek_t seek_request = {
         .fd = fd,
         .offset = offset,
@@ -392,7 +385,6 @@ ssize_t libfs_seek(fd_type fd, ssize_t offset) {
 }
 
 int libfs_stat(int fd, libfs_stat_struct_t* restrict statbuf) {
-    ensure_daemon();
     libfs_request_stat_t stat_request = {
         .fd = fd,
     };
@@ -415,7 +407,6 @@ int libfs_stat(int fd, libfs_stat_struct_t* restrict statbuf) {
 }
 
 int libfs_symlink(const char* source, const char* destination) {
-    ensure_daemon();
     libfs_request_symlink_t symlink_request = {
         .source = (char*)source,
         .destination = (char*)destination,
@@ -437,7 +428,6 @@ int libfs_symlink(const char* source, const char* destination) {
 }
 
 int libfs_unlink(char* name) {
-    ensure_daemon();
     libfs_request_unlink_t unlink_request = {
         .name = (char*)name,
     };
@@ -458,7 +448,6 @@ int libfs_unlink(char* name) {
 }
 
 ssize_t libfs_write(fd_type fd, u8* buf, unsigned int size) {
-    ensure_daemon();
     libfs_request_write_t write_request = {
         .fd = fd,
         .data = buf,
