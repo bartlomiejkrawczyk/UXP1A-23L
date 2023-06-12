@@ -386,20 +386,17 @@ void stat_handler(pid_t sender, const REQUEST_TYPE(stat) * request) {
         .st_size = file_stat.st_size,
         .st_blksize = file_stat.st_blksize,
         .st_blocks = file_stat.st_blocks,
-        .st_atim = // file_stat.st_atime, // TODO: check this out
+        .st_atim =
             {
                 .tv_sec = file_stat.st_atime,
-                // .tv_nsec = (long int)file_stat.st_atimensec,
             },
-        .st_mtim = // file_stat.st_mtime,
+        .st_mtim =
             {
                 .tv_sec = file_stat.st_mtime,
-                // .tv_nsec = (long int)file_stat.st_mtimensec,
             },
-        .st_ctim = // file_stat.st_ctime,
+        .st_ctim =
             {
                 .tv_sec = file_stat.st_ctime,
-                // .tv_nsec = (long int)file_stat.st_ctimensec,
             },
     };
 
