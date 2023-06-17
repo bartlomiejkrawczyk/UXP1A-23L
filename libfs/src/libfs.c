@@ -124,7 +124,7 @@ static int request_daemon_response(const libfs_request_t* request, libfs_respons
     }
 
     isize already_written = 0;
-    while (already_written < buffer_size) {
+    while (already_written < (isize) buffer_size) {
         isize result = write(request_fd, buffer, buffer_size);
 
         if (result <= 0) {
