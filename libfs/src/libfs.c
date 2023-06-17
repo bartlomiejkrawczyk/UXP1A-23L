@@ -123,15 +123,19 @@ static int request_daemon_response(const libfs_request_t* request, libfs_respons
         return -1;
     }
 
-    isize result = write(request_fd, buffer, buffer_size);
+    isize already_written = 0;
+    while (already_written < buffer_size) {
+        isize result = write(request_fd, buffer, buffer_size);
+
+        if (result <= 0) {
+            libfs_set_errno(LIBFS_ERRNO_MPIPE_WRITE);
+            return -1;
+        }
+        already_written += result;
+    }
 
     if (libfs_pipe_unlock(request_fd) < 0) {
         libfs_set_errno(LIBFS_ERRNO_MPIPE_UNLOCK);
-        return -1;
-    }
-
-    if (result <= 0 || (usize)result != buffer_size) {
-        libfs_set_errno(LIBFS_ERRNO_MPIPE_WRITE);
         return -1;
     }
 
